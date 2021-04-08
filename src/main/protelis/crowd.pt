@@ -14,6 +14,7 @@ def densityEstimation(p, range, w) = countNearby(range) / (p * PI * range ^ 2 * 
 
 def dangerousDensity(p, range, dangerousDensity, groupSize, w) {
 	let partition = S(range, nbrRange);
+	env.put("leader", partition)
 	let localDensity = densityEstimation(p, range, w);
 	let avg = summarize(partition, sum, localDensity, 0) / summarize(partition, sum, 1, 0);
 	let count = summarize(partition, sum, 1 / p, 0);

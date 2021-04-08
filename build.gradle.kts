@@ -41,14 +41,17 @@ sourceSets.getByName("main") {
 
 val alchemistGroup = "Run Alchemist"
 
-tasks.register<JavaExec>("run") {
+fun createTask(name: String, fileName: String) = tasks.register<JavaExec>(name) {
     group = alchemistGroup // This is for better organization when running ./gradlew tasks
     description = "Launches simulation" // Just documentation
     main = "it.unibo.alchemist.Alchemist" // The class to launch
     classpath = sourceSets["main"].runtimeClasspath // The classpath to use
     // These are the program arguments
     args(
-        "-y", "src/main/resources/yaml/crowdWarning.yml",
+        "-y", "src/main/resources/yaml/${fileName}.yml",
         "-g", "src/main/resources/crowd.aes"
     )
 }
+
+createTask("runScafi", "crowdWarningScafi")
+createTask("runProtelis", "crowdWarningProtelis")

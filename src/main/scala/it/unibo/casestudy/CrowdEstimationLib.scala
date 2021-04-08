@@ -113,7 +113,7 @@ trait CrowdEstimationLib extends BuildingBlocks {
   // Initially, each device is a candidate leader, competing for leadership.
     uid == rep(uid) { lead: (Double, ID) =>
       // Distance from current device (uid) to the current leader (lead).
-      val dist = classicGradient(uid == lead, metric)
+      val dist = distanceTo(uid == lead, metric) // MODIFIED it was G...
 
       // Initially, current device is candidate, so the distance ('dist')
       // will be 0; the same will be for other devices.
@@ -123,7 +123,7 @@ trait CrowdEstimationLib extends BuildingBlocks {
     }
 
   def myDistanceCompetition(d: Double, lead: (Double, ID), uid: (Double, ID), grain: Double, metric: Metric): (Double, ID) = {
-    val inf: (Double, ID) = (Double.PositiveInfinity, Int.MaxValue) //(Double.PositiveInfinity, uid._2)
+    val inf: (Double, ID) = (Double.PositiveInfinity, Int.MaxValue) // MODIFIED (Double.PositiveInfinity, uid._2)
     mux(d > grain) {
       // If the current device has a distance to the current candidate leader
       //   which is > grain, then the device candidate itself for another region.
@@ -142,7 +142,7 @@ trait CrowdEstimationLib extends BuildingBlocks {
         //   the min(t1,t2) is defined according the 1st element, or
         //   according to the 2nd elem in case of breakeven on the first one.
         //   (minHood uses min to select the candidate leader tuple)
-        minHoodPlus(lead)
+        minHoodPlus(lead) // MODIFIED
         /*minHood {
           mux(nbr { d } + metric() >= thr) {
             nbr { inf }

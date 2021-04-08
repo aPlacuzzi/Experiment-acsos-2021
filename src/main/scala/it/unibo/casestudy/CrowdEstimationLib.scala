@@ -51,7 +51,7 @@ trait CrowdEstimationLib extends BuildingBlocks {
    * }
    */
   def dangerousDensityFull(p: Double, range: Double, dangerousDensity: Double, groupSize: Double, w: Double): Boolean = {
-    val partition = S(range, nbrRange)
+    val partition = myS(range, nbrRange)
     node.put("leader", partition)
     val localDensity = densityEstimation(p, range, w)
     val avg = summarize(partition, _ + _, localDensity, 0.0) / summarize(partition, _ + _, 1.0, 0.0)
@@ -104,4 +104,53 @@ trait CrowdEstimationLib extends BuildingBlocks {
   case object Fine extends Crowding
 
   val noAdvice = Point2D(Double.NaN, Double.NaN)
+
+  def myS(grain: Double, metric: Metric): Boolean = myBreakUsingUids(randomUid, grain, metric)
+
+  def myBreakUsingUids(uid: (Double, ID),
+                     grain: Double,
+                     metric: Metric): Boolean =
+  // Initially, each device is a candidate leader, competing for leadership.
+    uid == rep(uid) { lead: (Double, ID) =>
+      // Distance from current device (uid) to the current leader (lead).
+      val dist = classicGradient(uid == lead, metric)
+
+      // Initially, current device is candidate, so the distance ('dist')
+      // will be 0; the same will be for other devices.
+      // To solve the conflict, devices abdicate in favor of devices with
+      // lowest UID, according to 'distanceCompetition'.
+      myDistanceCompetition(dist, lead, uid, grain, metric)
+    }
+
+  def myDistanceCompetition(d: Double, lead: (Double, ID), uid: (Double, ID), grain: Double, metric: Metric): (Double, ID) = {
+    val inf: (Double, ID) = (Double.PositiveInfinity, Int.MaxValue) //(Double.PositiveInfinity, uid._2)
+    mux(d > grain) {
+      // If the current device has a distance to the current candidate leader
+      //   which is > grain, then the device candidate itself for another region.
+      // Remember: 'grain' represents, in the algorithm,
+      //   the mean distance between two leaders.
+      uid
+    } {
+      val thr = 0.25 * grain // MODIFIED before was 0.5 * grain
+      mux(d >= thr) {
+        // If the current device is at an intermediate distance to the
+        //   candidate leader, then it abdicates (by returning 'inf').
+        inf
+      } {
+        // Otherwise, elect the leader with lowest UID.
+        // Note: it works because Tuple2 has an OrderingFoldable where
+        //   the min(t1,t2) is defined according the 1st element, or
+        //   according to the 2nd elem in case of breakeven on the first one.
+        //   (minHood uses min to select the candidate leader tuple)
+        minHoodPlus(lead)
+        /*minHood {
+          mux(nbr { d } + metric() >= thr) {
+            nbr { inf }
+          } {
+            nbr { lead }
+          }
+        }*/
+      }
+    }
+  }
 }

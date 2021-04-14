@@ -53,5 +53,6 @@ fun createTask(name: String, fileName: String) = tasks.register<JavaExec>(name) 
     )
 }
 
+createTask("gradient", "gradient")
 createTask("runScafi", "crowdWarningScafi")
 createTask("runProtelis", "crowdWarningProtelis")

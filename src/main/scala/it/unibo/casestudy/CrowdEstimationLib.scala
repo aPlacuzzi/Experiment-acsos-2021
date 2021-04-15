@@ -56,7 +56,7 @@ trait CrowdEstimationLib extends BuildingBlocks {
     val localDensity = densityEstimation(p, range, w)
     val avg = summarize(partition, _ + _, localDensity, 0.0) / summarize(partition, _ + _, 1.0, 0.0)
     val count = summarize(partition, _ + _, 1.0 / p, 0.0)
-    avg > dangerousDensity && count > groupSize
+    broadcast(partition, avg > dangerousDensity && count > groupSize)
   }
 
   /**
@@ -76,13 +76,15 @@ trait CrowdEstimationLib extends BuildingBlocks {
    * @param groupSize
    * @param timeFrame
    */
-  def crowdTrackingFull(p: Double,
-                        range: Double,
-                        w: Double,
-                        crowdedDensity: Double,
-                        dangerousThreshold: Double,
-                        groupSize: Double,
-                        timeFrame: Double): Crowding = {
+  def crowdTrackingFull(
+    p: Double,
+    range: Double,
+    w: Double,
+    crowdedDensity: Double,
+    dangerousThreshold: Double,
+    groupSize: Double,
+    timeFrame: Double
+  ): Crowding = {
     val densityEst = densityEstimation(p, range, w)
     mux (isRecentEvent(densityEst > crowdedDensity, timeFrame)) {
       if (dangerousDensityFull(p, range, dangerousThreshold, groupSize, w)) {
@@ -107,9 +109,7 @@ trait CrowdEstimationLib extends BuildingBlocks {
 
   def myS(grain: Double, metric: Metric): Boolean = myBreakUsingUids(randomUid, grain, metric)
 
-  def myBreakUsingUids(uid: (Double, ID),
-                     grain: Double,
-                     metric: Metric): Boolean =
+  def myBreakUsingUids(uid: (Double, ID), grain: Double, metric: Metric): Boolean =
   // Initially, each device is a candidate leader, competing for leadership.
     uid == rep(uid) { lead: (Double, ID) =>
       // Distance from current device (uid) to the current leader (lead).

@@ -43,12 +43,7 @@ class Crowd extends AggregateProgram  with StandardSensors with BlockG with Crow
     node.put("warning", warning)
     moveNode()
     warning
-//    val goto = direction(distToRiskZone, crowding)
-/*
-    val partition = S(crowdRange, nbrRange)  // ISSUE: THIS DOES NOT STABILISE
-    partition
-*/
-  }
+}
 
   private def moveNode() {
     val distanceFromDestination = classicGradient(node.has("destination"))

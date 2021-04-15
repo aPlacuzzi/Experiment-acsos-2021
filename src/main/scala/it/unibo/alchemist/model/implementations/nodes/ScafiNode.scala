@@ -16,17 +16,10 @@ class ScafiNode[T, P<:Position[P]](env: Environment[T, P]) extends AbstractNode[
   override def cloneNode(currentTime: Time): AbstractNode[T] = {
     val clone = new ScafiNode(env)
     getContents.forEach { (mol, value) => clone.setConcentration(mol, value) }
-    Console.println(getReactions.size())
     getReactions
       .stream()
-      .filter {reaction => reaction.getActions.stream().map{ action => action.getClass.getSimpleName }.noneMatch {
-        case "ReproduceGPSTrace" => {
-          Console.println("pippo"); true
-        }
-        case name => {
-          Console.println(name); false
-        }
-      }
+      .filter { reaction => reaction.getActions.stream().map{ action => action.getClass.getSimpleName }.noneMatch {
+        name => name.equals(classOf[ReproduceGPSTrace[_]].getSimpleName) }
       }
       .forEach { reaction => clone.addReaction(reaction.cloneOnNewNode(clone, currentTime))}
     clone

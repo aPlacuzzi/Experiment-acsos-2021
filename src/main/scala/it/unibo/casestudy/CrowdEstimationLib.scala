@@ -142,7 +142,7 @@ trait CrowdEstimationLib extends BuildingBlocks {
         //   the min(t1,t2) is defined according the 1st element, or
         //   according to the 2nd elem in case of breakeven on the first one.
         //   (minHood uses min to select the candidate leader tuple)
-        minHoodPlus(lead) // MODIFIED
+        minHoodLoc(uid)(nbr(lead)) // MODIFIED
         /*minHood {
           mux(nbr { d } + metric() >= thr) {
             nbr { inf }

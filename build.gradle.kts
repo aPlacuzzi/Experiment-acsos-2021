@@ -12,6 +12,7 @@ repositories {
 
 dependencies {
     implementation("it.unibo.alchemist:alchemist:_")
+    implementation("it.unibo.alchemist:alchemist-maps:_")
     implementation("it.unibo.alchemist:alchemist-swingui:_")
     implementation("it.unibo.alchemist:alchemist-incarnation-protelis:_")
     implementation("it.unibo.alchemist:alchemist-incarnation-scafi:_")
@@ -53,6 +54,7 @@ fun createTask(name: String, fileName: String, effectsFile: String) = tasks.regi
     )
 }
 
+createTask("clone", "clone", "gradient")
 createTask("gradient", "gradient", "gradient")
 createTask("runScafi", "crowdWarningScafi", "crowd")
 createTask("runProtelis", "crowdWarningProtelis", "crowd")

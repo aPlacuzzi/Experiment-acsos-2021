@@ -6,9 +6,8 @@
 package it.unibo.blocks
 
 import it.unibo.alchemist.model.scafi.ScafiIncarnationForAlchemist._
-import it.unibo.casestudy.CrowdEstimationLib
 
-class Gradient extends AggregateProgram  with StandardSensors with BlockG with CrowdEstimationLib with ScafiAlchemistSupport
+class Gradient extends AggregateProgram  with StandardSensors with BlockG with ScafiAlchemistSupport
   with CustomSpawn {
   override def main(): Any = {
     val distanceFromDestination = classicGradientWithShare(mid() == 55) // classicGradient(mid() == 55)

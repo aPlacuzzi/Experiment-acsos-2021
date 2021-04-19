@@ -21,7 +21,7 @@ import it.unibo.alchemist.model.scafi.ScafiIncarnationForAlchemist._
   *     fraction of walkable space in the local
   *     urban environment.
   */
-class Crowd extends AggregateProgram  with StandardSensors with BlockG with CrowdEstimationLib with ScafiAlchemistSupport {
+class Crowd extends AggregateProgram  with StandardSensors with BlockG with CrowdEstimationLib with ScafiAlchemistSupport with CustomSpawn with TimeUtils {
   override def main(): Any = {
     /* CROWD ESTIMATION
     *  * In FOCAS:
@@ -46,7 +46,13 @@ class Crowd extends AggregateProgram  with StandardSensors with BlockG with Crow
 }
 
   private def moveNode() {
-    val distanceFromDestination = classicGradient(node.has("destination"))
+    val distanceFromDestination = classicGradientWithShare(mid() == 55)
     node.put("distance", distanceFromDestination)
   }
+
+  // Much faster than 'classicGradient'
+  def classicGradientWithShare(source: Boolean, metric: () => Double = nbrRange): Double =
+    share(Double.PositiveInfinity){ case (d,nbrf) =>
+      mux(source){ 0.0 }{ minHoodPlus(nbrf() + metric()) }
+    }
 }

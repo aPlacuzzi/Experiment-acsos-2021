@@ -4,7 +4,7 @@ import it.unibo.alchemist.model.scafi.ScafiIncarnationForAlchemist._
 import it.unibo.scafi.space.{Point2D, Point3D}
 
 import java.util.concurrent.TimeUnit
-import scala.concurrent.duration.{Duration, FiniteDuration}
+import scala.concurrent.duration.{DAYS, Duration, FiniteDuration}
 
 /**
  * See papers:
@@ -12,13 +12,8 @@ import scala.concurrent.duration.{Duration, FiniteDuration}
  * - Aggregate Programming for the Internet of Things (Beal et al., IEEE Computer, 2015)
  */
 trait CrowdEstimationLib extends BuildingBlocks {
-  self: AggregateProgram with StandardSensors with ScafiAlchemistSupport =>
+  self: AggregateProgram with StandardSensors with ScafiAlchemistSupport with CustomSpawn with TimeUtils =>
   val (high, low, none) = (2, 1, 0) // crowd level
-
-  def unionHoodPlus[A](expr: => A): List[A] =
-    foldhoodPlus(List[A]())(_ ++ _) {
-      List[A](expr)
-    }
 
   /**
    * Density is estimated as ρ = |nbrs|/pπr2w, where |nbrs| counts neighbors
@@ -26,20 +21,11 @@ trait CrowdEstimationLib extends BuildingBlocks {
    * the app (about 0.5 percent of marathon attendees), and w estimates the
    * fraction of walkable space in the local urban environment.
    */
-  def countNearby(range: Double): Double =
-    includingSelf.sumHood(mux(node.has("human") && nbrRange() < range) { 1 } { 0 })
+  def countNearby(range: Double): Double = foldhood(0)(_ + _)(mux(node.has("human") & nbrRange() < range) { 1 } { 0 })
 
   def densityEstimation(p: Double, range: Double, w: Double): Double = countNearby(range) / (p * Math.PI * Math.pow(range, 2) * w)
 
-  def isRecentEvent(event: Boolean, timeout: Double): Boolean = {
-    branch(event) {
-      true
-    } {
-      timerLocalTime(FiniteDuration(timeout.toLong, TimeUnit.SECONDS)) > 0
-    }
-  }
-
-  def timerLocalTime(dur: Duration): Long = T(initial = dur.toNanos, dt = deltaTime().toNanos)
+  def isRecentEvent(event: Boolean, timeout: Double): Boolean = recentlyTrue(FiniteDuration(timeout.toLong, TimeUnit.SECONDS), event)
 
   /**
    * def dangerousDensity(p, range, dangerousDensity, groupSize, w) {
@@ -51,8 +37,7 @@ trait CrowdEstimationLib extends BuildingBlocks {
    * }
    */
   def dangerousDensityFull(p: Double, range: Double, dangerousDensity: Double, groupSize: Double, w: Double): Boolean = {
-    val partition = myS(range, nbrRange)
-    node.put("leader", partition)
+    val partition = myS2(range, nbrRange)
     val localDensity = densityEstimation(p, range, w)
     val avg = summarize(partition, _ + _, localDensity, 0.0) / summarize(partition, _ + _, 1.0, 0.0)
     val count = summarize(partition, _ + _, 1.0 / p, 0.0)
@@ -86,12 +71,12 @@ trait CrowdEstimationLib extends BuildingBlocks {
     timeFrame: Double
   ): Crowding = {
     val densityEst = densityEstimation(p, range, w)
-    mux (isRecentEvent(densityEst > crowdedDensity, timeFrame)) {
-      if (dangerousDensityFull(p, range, dangerousThreshold, groupSize, w)) {
-        Overcrowded
-      } else AtRisk
+    branch (isRecentEvent(densityEst > crowdedDensity, timeFrame)) {
+      branch (dangerousDensityFull(p, range, dangerousThreshold, groupSize, w)) {
+        Overcrowded.asInstanceOf[Crowding]
+      } { AtRisk.asInstanceOf[Crowding] }
     } {
-      Fine
+      Fine.asInstanceOf[Crowding]
     }
   }
 
@@ -107,49 +92,32 @@ trait CrowdEstimationLib extends BuildingBlocks {
 
   val noAdvice = Point2D(Double.NaN, Double.NaN)
 
-  def myS(grain: Double, metric: Metric): Boolean = myBreakUsingUids(randomUid, grain, metric)
+  val inf: (Double, ID) = (Double.PositiveInfinity, Int.MaxValue)
 
-  def myBreakUsingUids(uid: (Double, ID), grain: Double, metric: Metric): Boolean =
-  // Initially, each device is a candidate leader, competing for leadership.
-    uid == rep(uid) { lead: (Double, ID) =>
-      // Distance from current device (uid) to the current leader (lead).
-      val dist = distanceTo(uid == lead, metric) // MODIFIED it was G...
+  def myS2(grain: Double, metric: Metric) = myBreakUsingUids(randomUid, grain, metric)
 
-      // Initially, current device is candidate, so the distance ('dist')
-      // will be 0; the same will be for other devices.
-      // To solve the conflict, devices abdicate in favor of devices with
-      // lowest UID, according to 'distanceCompetition'.
-      myDistanceCompetition(dist, lead, uid, grain, metric)
-    }
+  def myBreakUsingUids(
+    uid: (Double, ID),
+    grain: Double,
+    metric: Metric
+  ): Boolean =
+    share(uid) { case (lead, nbrLead) =>
+      myDistanceCompetition2(distanceTo(lead == uid, metric), nbrLead(), uid, grain)
+    } == uid
 
-  def myDistanceCompetition(d: Double, lead: (Double, ID), uid: (Double, ID), grain: Double, metric: Metric): (Double, ID) = {
-    val inf: (Double, ID) = (Double.PositiveInfinity, Int.MaxValue) // MODIFIED (Double.PositiveInfinity, uid._2)
-    mux(d > grain) {
-      // If the current device has a distance to the current candidate leader
-      //   which is > grain, then the device candidate itself for another region.
-      // Remember: 'grain' represents, in the algorithm,
-      //   the mean distance between two leaders.
+  def myDistanceCompetition2(distance: Double, nbrLead: (Double, ID), uid: (Double, ID), grain: Double): (Double, ID) = {
+    mux (distance > grain) {
       uid
     } {
-      val thr = 0.25 * grain // MODIFIED before was 0.5 * grain
-      mux(d >= thr) {
-        // If the current device is at an intermediate distance to the
-        //   candidate leader, then it abdicates (by returning 'inf').
+      val thr = 0.25 * grain;
+      mux (distance >= thr) {
         inf
       } {
-        // Otherwise, elect the leader with lowest UID.
-        // Note: it works because Tuple2 has an OrderingFoldable where
-        //   the min(t1,t2) is defined according the 1st element, or
-        //   according to the 2nd elem in case of breakeven on the first one.
-        //   (minHood uses min to select the candidate leader tuple)
-        minHoodLoc(uid)(nbr(lead)) // MODIFIED
-        /*minHood {
-          mux(nbr { d } + metric() >= thr) {
-            nbr { inf }
-          } {
-            nbr { lead }
-          }
-        }*/
+        mux (distance >= thr) {
+          inf
+        } {
+          minHood(nbr(nbrLead))
+        }
       }
     }
   }

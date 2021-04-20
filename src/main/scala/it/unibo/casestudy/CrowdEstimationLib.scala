@@ -21,7 +21,8 @@ trait CrowdEstimationLib extends BuildingBlocks {
    * the app (about 0.5 percent of marathon attendees), and w estimates the
    * fraction of walkable space in the local urban environment.
    */
-  def countNearby(range: Double): Double = foldhood(0)(_ + _)(mux(node.has("human") & nbrRange() < range) { 1 } { 0 })
+    // X ROBY, mi confermi che con questa foldhood conta i soli vicini umani (e non i virtuali) all'interno di range
+  def countNearby(range: Double): Double = foldhood(0)(_ + _)(mux(nbr(node.get("human").asInstanceOf[Boolean]) & nbrRange() < range) { 1 } { 0 })
 
   def densityEstimation(p: Double, range: Double, w: Double): Double = countNearby(range) / (p * Math.PI * Math.pow(range, 2) * w)
 
@@ -41,7 +42,7 @@ trait CrowdEstimationLib extends BuildingBlocks {
     val localDensity = densityEstimation(p, range, w)
     val avg = summarize(partition, _ + _, localDensity, 0.0) / summarize(partition, _ + _, 1.0, 0.0)
     val count = summarize(partition, _ + _, 1.0 / p, 0.0)
-    broadcast(partition, avg > dangerousDensity && count > groupSize)
+    broadcast(partition, avg > dangerousDensity && count > groupSize) // X ROBY: la broadcast qui serve?
   }
 
   /**
@@ -70,11 +71,13 @@ trait CrowdEstimationLib extends BuildingBlocks {
     groupSize: Double,
     timeFrame: Double
   ): Crowding = {
+    node.put("_near", countNearby(range))
     val densityEst = densityEstimation(p, range, w)
     branch (isRecentEvent(densityEst > crowdedDensity, timeFrame)) {
-      branch (dangerousDensityFull(p, range, dangerousThreshold, groupSize, w)) {
+      /*branch (dangerousDensityFull(p, range, dangerousThreshold, groupSize, w)) { // Ignore difference between Overcrowded and atRisk
         Overcrowded.asInstanceOf[Crowding]
-      } { AtRisk.asInstanceOf[Crowding] }
+      } { AtRisk.asInstanceOf[Crowding] }*/
+      AtRisk.asInstanceOf[Crowding]
     } {
       Fine.asInstanceOf[Crowding]
     }

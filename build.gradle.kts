@@ -57,5 +57,6 @@ fun createTask(name: String, fileName: String, effectsFile: String) = tasks.regi
 createTask("s", "s", "s")
 createTask("clone", "clone", "gradient")
 createTask("gradient", "gradient", "gradient")
+createTask("crowdWithVirtuals", "crowdWithVirtuals", "crowdWithVirtuals")
 createTask("runScafi", "crowdWarningScafi", "crowd")
 createTask("runProtelis", "crowdWarningProtelis", "crowd")

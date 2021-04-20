@@ -23,7 +23,7 @@ seeds:
 
 incarnation: scafi
 
-ReproduceGPSTrace: &ReproduceGPSTrace
+_ReproduceGPSTrace: &ReproduceGPSTrace
   type: ReproduceGPSTrace
   parameters: ["vcmuser.gpx", false, AlignToTime, 1365922800, false, false]
 
@@ -35,7 +35,7 @@ network-model:
   type: ConnectWithinDistance #*connectionType
   parameters: [*range]
 
-pools:
+_pools:
   - pool: &program
       - time-distribution: 1
         type: Event
@@ -49,10 +49,9 @@ pools:
         actions:
           - *ReproduceGPSTrace
 
-displacements:
-  - in:
-      type: FromGPSTrace
-      parameters: [1, "vcmuser.gpx", false, AlignToTime, 1365922800, false, false] #1497
+deployments:
+  - type: FromGPSTrace
+    parameters: [1, "vcmuser.gpx", false, AlignToTime, 1365922800, false, false] #1497
     programs:
       - *move
       - *program

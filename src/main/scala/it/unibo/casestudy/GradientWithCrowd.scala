@@ -5,6 +5,8 @@
 
 package it.unibo.casestudy
 
+import it.unibo.alchemist.model.implementations.molecules.SimpleMolecule
+import it.unibo.alchemist.model.implementations.positions.LatLongPosition
 import it.unibo.alchemist.model.scafi.ScafiIncarnationForAlchemist._
 
 /**
@@ -28,9 +30,10 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
     * * p = 0.1; range = 15 // 30; wRange = 30 // 100; commRange = n.a.; avgThreshold = 2.17 people / m²;
     * sumThreshold = 300 people; maxDensity = 1.08 people / m²; timeFrame = 60; w = 0.25 (fraction of walkable space in the local urban environment)
     * */
-    val source = mid() == 55
-    val destination = mid() == 427
-    node.put("destination", destination)
+    // 48.210255,16.377142
+    val source = node.get("isSource").asInstanceOf[Boolean]
+    val destination = node.get("isDestination").asInstanceOf[Boolean]
+    spawnDestination(source)
     val distToRiskZone = 30.0;
     val p = 0.005
     val crowdRange = 30
@@ -47,6 +50,25 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
     node.put("_inChannel", channel._1)
     node.put("distance", channel._2)
     warning
+  }
+
+  private def spawnDestination(isSource: Boolean): Unit = {
+    val myNode = alchemistEnvironment.getNodeByID(mid())
+    rep(init = true) {
+      case true => {
+        if (isSource) {
+          val destination = myNode.cloneNode(alchemistTimestamp)
+          destination.setConcentration(new SimpleMolecule("isSource"), false)
+          destination.setConcentration(new SimpleMolecule("isDestination"), true)
+          destination.setConcentration(new SimpleMolecule("human"), false)
+          destination.setConcentration(new SimpleMolecule("accessPoint"), true)
+          val destPosition = new LatLongPosition(48.21023, 16.377142)
+          alchemistEnvironment.addNode(destination, destPosition)
+        }
+        false
+      }
+      case _ => false
+    }
   }
 
   private def channelToDestination(source: Boolean, destination: Boolean, width: Double, warningZone: Boolean) = {

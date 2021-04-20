@@ -67,14 +67,52 @@ deployments:
         concentration: true
       - molecule: *accessPointMoleculeName
         concentration: false
+      - molecule: isSource
+        concentration: false
+      - molecule: isDestination
+        concentration: false
   - type: Grid
     parameters: [ 48.182, 16.308, 48.2270, 16.423, 0.0055, 0.0055 ]
     programs:
       - *program
     contents:
       - molecule: range
-        concentration: *aprange
+        concentration: *range
       - molecule: human
         concentration: false
       - molecule: *accessPointMoleculeName
         concentration: true
+      - molecule: isSource
+        concentration: false
+      - molecule: isDestination
+        concentration: false
+  - type: Point
+    parameters: [48.205933, 16.3419]
+    programs:
+      - *program
+    contents:
+      - molecule: range
+        concentration: *range
+      - molecule: human
+        concentration: true
+      - molecule: *accessPointMoleculeName
+        concentration: false
+      - molecule: isSource
+        concentration: true
+      - molecule: isDestination
+        concentration: false
+#  - type: Point
+#    parameters: [ 48.210255, 16.377142 ]
+#    programs:
+#      - *program
+#    contents:
+#      - molecule: range
+#        concentration: *aprange
+#      - molecule: human
+#        concentration: false
+#      - molecule: *accessPointMoleculeName
+#        concentration: true
+#      - molecule: isSource
+#        concentration: false
+#      - molecule: isDestination
+#        concentration: true

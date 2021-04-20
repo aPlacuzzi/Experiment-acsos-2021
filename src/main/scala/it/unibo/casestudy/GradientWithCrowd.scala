@@ -28,6 +28,9 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
     * * p = 0.1; range = 15 // 30; wRange = 30 // 100; commRange = n.a.; avgThreshold = 2.17 people / m²;
     * sumThreshold = 300 people; maxDensity = 1.08 people / m²; timeFrame = 60; w = 0.25 (fraction of walkable space in the local urban environment)
     * */
+    val source = mid() == 55
+    val destination = mid() == 427
+    node.put("destination", destination)
     val distToRiskZone = 30.0;
     val p = 0.005
     val crowdRange = 30
@@ -38,20 +41,38 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
     val timeFrame = 60
     val crowding = crowdTrackingFull(p, crowdRange, w, crowdedDensity, dangerousThreshold, groupSize, timeFrame) // overcrowded(), atRisk(), or none()
     node.put("risk", crowding == AtRisk)
-    val warning = computeWarning(50, crowding)
+    val warning = computeWarning(100, crowding)
     node.put("warning", warning)
-//    moveNode()
+    val channel = channelToDestination(source, destination, 30, warning)
+    node.put("_inChannel", channel._1)
+    node.put("distance", channel._2)
     warning
-}
+  }
 
-  private def moveNode() {
-    val distanceFromDestination = classicGradientWithShare(mid() == 55)
+  private def channelToDestination(source: Boolean, destination: Boolean, width: Double, warningZone: Boolean) = {
+    val ds = classicGradientWithShare(source, warningZone)
+    val dd = classicGradientWithShare(destination, warningZone)
+    val db = distanceBetween(source, destination)
+    val inChannel = !(ds + dd == Double.PositiveInfinity && db == Double.PositiveInfinity) && ds + dd <= db + width
+    (inChannel, if (inChannel) dd else Double.PositiveInfinity)
+  }
+
+  private def moveNode(warningZone: Boolean) {
+    val distanceFromDestination = classicGradientWithShare(mid() == 55, warningZone) // 427
     node.put("distance", distanceFromDestination)
   }
 
   // Much faster than 'classicGradient'
-  def classicGradientWithShare(source: Boolean, metric: () => Double = nbrRange): Double =
+  def classicGradientWithShare(source: Boolean, warningZone: Boolean, metric: () => Double = nbrRange): Double =
     share(Double.PositiveInfinity){ case (d,nbrf) =>
-      mux(source){ 0.0 }{ minHoodPlus(nbrf() + metric()) }
+      mux(source){
+        0.0
+      } {
+        mux (warningZone) {
+          Double.PositiveInfinity
+        } {
+          minHoodPlus(nbrf() + metric())
+        }
+      }
     }
 }

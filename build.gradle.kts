@@ -42,7 +42,7 @@ sourceSets.getByName("main") {
 
 val alchemistGroup = "Run Alchemist"
 
-fun createTask(name: String, fileName: String, effectsFile: String) = tasks.register<JavaExec>(name) {
+fun createTask(name: String, fileName: String, effectsFile: String, extensionEffectsFile: String = "aes") = tasks.register<JavaExec>(name) {
     group = alchemistGroup // This is for better organization when running ./gradlew tasks
     description = "Launches simulation" // Just documentation
     main = "it.unibo.alchemist.Alchemist" // The class to launch
@@ -50,13 +50,13 @@ fun createTask(name: String, fileName: String, effectsFile: String) = tasks.regi
     // These are the program arguments
     args(
         "-y", "src/main/resources/yaml/${fileName}.yml",
-        "-g", "src/main/resources/${effectsFile}.aes"
+        "-g", "src/main/resources/${effectsFile}.${extensionEffectsFile}"
     )
 }
 
 createTask("s", "s", "s")
 createTask("clone", "clone", "gradient")
 createTask("gradient", "gradient", "gradient")
-createTask("crowdWithVirtuals", "crowdWithVirtuals", "crowdWithVirtuals")
+createTask("crowdWithVirtuals", "crowdWithVirtuals", "crowdWithVirtuals", "json")
 createTask("runScafi", "crowdWarningScafi", "crowd")
 createTask("runProtelis", "crowdWarningProtelis", "crowd")

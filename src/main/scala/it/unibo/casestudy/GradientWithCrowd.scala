@@ -49,7 +49,25 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
     val channel = channelToDestination(source, destination, 30, warning)
     node.put("_inChannel", channel._1)
     node.put("distance", channel._2)
+    navigateChannel(source, channel)
     warning
+  }
+
+  private def navigateChannel(isSource: Boolean, channel: (Boolean, Double)) = {
+    branch(channel._1 || isSource) {
+      val myNode = alchemistEnvironment.getNodeByID(mid())
+      val myPos = alchemistEnvironment.getPosition(myNode)
+      val newPos = includingSelf
+        .mapNbrs(nbr((channel._2, myPos)))
+        .filter(entry => entry._2._1 < channel._2)
+        .maxByOption(entry => entry._2._1)
+      if (isSource && newPos.isDefined) {
+        node.put("_newPos", newPos.get._2._2)
+        if (cyclicTimerWithDecay(5_000, deltaTime().toMillis)) {
+          alchemistEnvironment.moveNodeToPosition(myNode, newPos.get._2._2)
+        }
+      }
+    } {}
   }
 
   private def spawnDestination(isSource: Boolean): Unit = {
@@ -71,7 +89,7 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
     }
   }
 
-  private def channelToDestination(source: Boolean, destination: Boolean, width: Double, warningZone: Boolean) = {
+  private def channelToDestination(source: Boolean, destination: Boolean, width: Double, warningZone: Boolean): (Boolean, Double) = {
     val ds = classicGradientWithShare(source, warningZone)
     val dd = classicGradientWithShare(destination, warningZone)
     val db = distanceBetween(source, destination)

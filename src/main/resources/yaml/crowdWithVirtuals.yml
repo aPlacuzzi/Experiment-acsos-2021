@@ -87,7 +87,7 @@ deployments:
       - molecule: isDestination
         concentration: false
   - type: Point
-    parameters: [48.205933, 16.3419]
+    parameters: [48.2057, 16.3419]
     programs:
       - *program
     contents:

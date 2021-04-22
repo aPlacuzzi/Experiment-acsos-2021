@@ -33,7 +33,8 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
     // 48.210255,16.377142
     val source = node.get("isSource").asInstanceOf[Boolean]
     val destination = node.get("isDestination").asInstanceOf[Boolean]
-    spawnDestination(source)
+    val destinationPosition = new LatLongPosition(48.21023, 16.377142)
+    spawnDestination(source, destinationPosition)
     val distToRiskZone = 30.0;
     val p = 0.005
     val crowdRange = 30
@@ -59,7 +60,7 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
       val myPos = alchemistEnvironment.getPosition(myNode)
       val newPos = includingSelf
         .mapNbrs(nbr((channel._2, myPos)))
-        .filter(entry => entry._2._1 < channel._2)
+        .filter(entry => entry._2._1 < channel._2 && entry._2._1 > 0)
         .maxByOption(entry => entry._2._1)
       if (isSource && newPos.isDefined) {
         node.put("_newPos", newPos.get._2._2)
@@ -70,7 +71,7 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
     } {}
   }
 
-  private def spawnDestination(isSource: Boolean): Unit = {
+  private def spawnDestination(isSource: Boolean, destinationPosition: LatLongPosition): Unit = {
     val myNode = alchemistEnvironment.getNodeByID(mid())
     rep(init = true) {
       case true => {
@@ -80,8 +81,7 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
           destination.setConcentration(new SimpleMolecule("isDestination"), true)
           destination.setConcentration(new SimpleMolecule("human"), false)
           destination.setConcentration(new SimpleMolecule("accessPoint"), true)
-          val destPosition = new LatLongPosition(48.21023, 16.377142)
-          alchemistEnvironment.addNode(destination, destPosition)
+          alchemistEnvironment.addNode(destination, destinationPosition)
         }
         false
       }

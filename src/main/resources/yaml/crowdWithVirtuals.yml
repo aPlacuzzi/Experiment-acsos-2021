@@ -59,7 +59,7 @@ environment:
   parameters: ["vcm.pbf", false]
 
 network-model:
-  type: CustomConnectViaAccessPoint #ConnectWithinDistance #*connectionType
+  type: CustomConnectWithinDistance #ConnectWithinDistance #*connectionType
   parameters: [*range, *aprange, *accessPointMoleculeName]
 
 _pools:

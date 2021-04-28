@@ -1,6 +1,6 @@
 package it.unibo.alchemist.model.implementations.nodes
 
-import it.unibo.alchemist.model.implementations.actions.{AbstractAction, ReproduceGPSTrace, RunProtelisProgram}
+import it.unibo.alchemist.model.implementations.actions.{MoveToTarget, ReproduceGPSTrace, TargetWalker}
 import it.unibo.alchemist.model.interfaces.{Environment, Molecule, Position, Time}
 
 class ScafiNode[T, P<:Position[P]](env: Environment[T, P]) extends AbstractNode[T](env) {
@@ -19,7 +19,7 @@ class ScafiNode[T, P<:Position[P]](env: Environment[T, P]) extends AbstractNode[
     getReactions
       .stream()
       .filter { reaction => reaction.getActions.stream().map{ action => action.getClass.getSimpleName }.noneMatch {
-        name => name.equals(classOf[ReproduceGPSTrace[_]].getSimpleName) }
+        name => name.equals(classOf[ReproduceGPSTrace[_]].getSimpleName) || name.equals(classOf[TargetWalker[_]].getSimpleName) }
       }
       .forEach { reaction => clone.addReaction(reaction.cloneOnNewNode(clone, currentTime))}
     clone

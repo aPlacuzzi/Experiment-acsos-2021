@@ -57,6 +57,6 @@ fun createTask(name: String, fileName: String, effectsFile: String, extensionEff
 createTask("s", "s", "s")
 createTask("clone", "clone", "gradient")
 createTask("gradient", "gradient", "gradient")
-createTask("crowdWithVirtuals", "crowdWithVirtuals", "gradientWithDest", "json")
+createTask("crowdWithVirtuals", "crowdWithVirtuals", "caseStudy", "json")
 createTask("runScafi", "crowdWarningScafi", "crowd")
 createTask("runProtelis", "crowdWarningProtelis", "crowd")

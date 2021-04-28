@@ -18,6 +18,28 @@ variables:
   retentionTime: &retentionTime
     formula: Math.min(30.0, 50.0)
     language: scala
+  gridBottomLeftLat: &gridBottomLeftLat
+    formula: 48.182
+    language: scala
+  gridBottomLeftLong: &gridBottomLeftLong
+    formula: 16.308
+    language: scala
+  gridTopRightLat: &gridTopRightLat
+    formula: 48.2270
+    language: scala
+  gridTopRightLong: &gridTopRightLong
+    formula: 16.423
+    language: scala
+  xStep: &xStep
+    min: 0.0055
+    max: 0.045
+    step: 0.0079 # 5 step
+    default: 0.0055
+  yStep: &yStep
+    min: 0.0055
+    max: 0.115
+    step: 0.0219 # 5 step
+    default: 0.0055
 
 export:
   - time
@@ -53,6 +75,12 @@ _pools:
         type: Event
         actions:
           - *ReproduceGPSTrace
+  - pool: &moveToTarget
+      - time-distribution: 0.1
+        type: Event
+        actions:
+          - type: TargetWalker
+            parameters: ["target", 5.0]
 
 deployments:
   - type: FromGPSTrace
@@ -72,7 +100,7 @@ deployments:
       - molecule: isDestination
         concentration: false
   - type: Grid
-    parameters: [ 48.182, 16.308, 48.2270, 16.423, 0.0055, 0.0055 ]
+    parameters: [ *gridBottomLeftLat, *gridBottomLeftLong, *gridTopRightLat, *gridTopRightLong, *yStep, *xStep]#, 0.001, 0.001 ]
     programs:
       - *program
     contents:
@@ -84,35 +112,59 @@ deployments:
         concentration: true
       - molecule: isSource
         concentration: false
-      - molecule: isDestination
-        concentration: false
-  - type: Point
-    parameters: [48.2057, 16.3419]
-    programs:
-      - *program
-    contents:
-      - molecule: range
-        concentration: *range
-      - molecule: human
-        concentration: true
-      - molecule: *accessPointMoleculeName
-        concentration: false
-      - molecule: isSource
-        concentration: true
       - molecule: isDestination
         concentration: false
 #  - type: Point
-#    parameters: [ 48.210255, 16.377142 ]
+#    parameters: [48.2057, 16.3419]
 #    programs:
 #      - *program
+#      - *moveToTarget
 #    contents:
 #      - molecule: range
-#        concentration: *aprange
+#        concentration: *range
 #      - molecule: human
-#        concentration: false
+#        concentration: true
 #      - molecule: *accessPointMoleculeName
-#        concentration: true
-#      - molecule: isSource
 #        concentration: false
-#      - molecule: isDestination
+#      - molecule: isSource
 #        concentration: true
+#      - molecule: isDestination
+#        concentration: false
+#      - molecule: target
+#        concentration: "\"48.2057 16.3419\""
+#  - type: Point
+#    parameters: [ 48.1930, 16.3885 ]
+#    programs:
+#      - *program
+#      - *moveToTarget
+#    contents:
+#      - molecule: range
+#        concentration: *range
+#      - molecule: human
+#        concentration: true
+#      - molecule: *accessPointMoleculeName
+#        concentration: false
+#      - molecule: isSource
+#        concentration: true
+#      - molecule: isDestination
+#        concentration: false
+#      - molecule: target
+#        concentration: "\"48.1930 16.3885\""
+  - type: Point
+    parameters: [ 48.2249, 16.3785 ]
+    programs:
+      - *program
+      - *moveToTarget
+    contents:
+      - molecule: range
+        concentration: *range
+      - molecule: human
+        concentration: true
+      - molecule: *accessPointMoleculeName
+        concentration: false
+      - molecule: isSource
+        concentration: true
+      - molecule: isDestination
+        concentration: false
+      - molecule: target
+        concentration: "\"48.2249, 16.3785\""

@@ -6,17 +6,17 @@
     "red": {
       "max": 255,
       "min": 0,
-      "val": 0
+      "val": 189
     },
     "blue": {
       "max": 255,
       "min": 0,
-      "val": 0
+      "val": 33
     },
     "green": {
       "max": 255,
       "min": 0,
-      "val": 255
+      "val": 36
     },
     "alpha": {
       "max": 255,
@@ -56,7 +56,7 @@
       "val": 1
     },
     "colorCache": {
-      "value": -16711936,
+      "value": -4381663,
       "falpha": 0.0
     }
   },
@@ -143,7 +143,7 @@
     "alpha": {
       "max": 255,
       "min": 0,
-      "val": 255
+      "val": 107
     },
     "scaleFactor": {
       "max": 100,
@@ -178,7 +178,7 @@
       "val": 1
     },
     "colorCache": {
-      "value": -16776961,
+      "value": 1795162367,
       "falpha": 0.0
     }
   },

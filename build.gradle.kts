@@ -18,6 +18,7 @@ dependencies {
     implementation("it.unibo.alchemist:alchemist-incarnation-scafi:_")
     implementation("org.scala-lang:scala-library:2.13.4")
     implementation("it.unibo.scafi:scafi-core_2.13:_")
+    implementation("org.slf4j:slf4j-api:1.7.30")
     //implementation("org.protelis:protelis-lang:_")
     implementation(kotlin("stdlib"))
 }

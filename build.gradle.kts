@@ -1,3 +1,7 @@
+import java.io.ByteArrayOutputStream
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
 plugins {
     java
     scala
@@ -55,9 +59,85 @@ fun createTask(name: String, fileName: String, effectsFile: String, extensionEff
     )
 }
 
+val baseDataFileName: String? by project
+val maxHeapRatioArg: String? by project
+val timeArg: String? by project
+
+fun makeTest(
+    file: String,
+    name: String = file,
+    sampling: Double = 1.0,
+    time: Double = Double.POSITIVE_INFINITY,
+    vars: Set<String> = setOf(),
+    maxHeap: Long? = null,
+    taskSize: Int = 1024,
+    threads: Int? = null,
+    debug: Boolean = false,
+    effects: String? = null
+) {
+    val time = timeArg?.toDouble() ?: time
+    val maxHeapRatio: Double = maxHeapRatioArg?.toDouble() ?: 1.0
+    val heap = if(threads != null) { threads*taskSize } else { maxHeap ?: (if (System.getProperty("os.name").toLowerCase().contains("linux")) {
+        ByteArrayOutputStream().use { output ->
+            exec {
+                executable = "bash"
+                args = listOf("-c", "cat /proc/meminfo | grep MemAvailable | grep -o '[0-9]*'")
+                standardOutput = output
+            }
+            output.toString().trim().toLong() / 1024
+        }
+            .also { println("Detected ${it}MB RAM available.") }  * maxHeapRatio
+    } else {
+        // Guess 16GB RAM of which 2 used by the OS
+        14.0 * 1024
+    }).toLong()
+    }
+
+    val threadCount = threads ?: maxOf(1, minOf(Runtime.getRuntime().availableProcessors(), heap.toInt() / taskSize ))
+    println("$name > Running on $threadCount threads and with maxHeapSize $heap")
+
+    val today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+
+    task<JavaExec>(name) {
+        val datafilename = "${today}-" +  (baseDataFileName ?: name)
+        dependsOn("build")
+        classpath = sourceSets["main"].runtimeClasspath
+        classpath("src/main/protelis")
+        main = "it.unibo.alchemist.Alchemist"
+        maxHeapSize = "${heap}m"
+        jvmArgs("-XX:+AggressiveHeap")
+        jvmArgs("-XX:-UseGCOverheadLimit")
+        //jvmArgs("-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap") // https://stackoverflow.com/questions/38967991/why-are-my-gradle-builds-dying-with-exit-code-137
+        if (debug) {
+            jvmArgs("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044")
+        }
+        File("data").mkdirs()
+        args(
+            "-y", "src/main/resources/yaml/${file}.yml",
+            "-t", "$time",
+            "-e", "data/$datafilename",
+            "-p", threadCount,
+            "-i", "$sampling"
+        )
+        if (vars.isNotEmpty()) {
+            args("-b", "-var", *vars.toTypedArray())
+        }
+        if(effects != null){
+            args("-g", effects)
+        }
+    }
+    /*tasks {
+        "runTests" {
+            dependsOn("$name")
+        }
+    }*/
+}
+
+
 createTask("s", "s", "s")
 createTask("clone", "clone", "gradient")
 createTask("gradient", "gradient", "gradient")
 createTask("crowdWithVirtuals", "crowdWithVirtuals", "caseStudy", "json")
 createTask("runScafi", "crowdWarningScafi", "crowd")
 createTask("runProtelis", "crowdWarningProtelis", "crowd")
+makeTest(name="batch", file = "crowdWithVirtuals", time = 1000.0, vars = setOf("xStep, yStep"), taskSize = 1500)

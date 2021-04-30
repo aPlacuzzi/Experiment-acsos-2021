@@ -1,9 +1,9 @@
 variables:
-#  random: &random
-#    min: 0
-#    max: 5
-#    step: 1
-#    default: 2
+  random: &random
+    min: 0
+    max: 5
+    step: 1
+    default: 2
   range: &range
     formula: 350
     language: scala
@@ -59,8 +59,8 @@ export:
     value-filter: FilterNaN
 
 seeds:
-  scenario: 0 #*random
-  simulation: 0 #*random
+  scenario: *random
+  simulation: *random
 
 incarnation: scafi
 

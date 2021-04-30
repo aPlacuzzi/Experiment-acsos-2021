@@ -29,17 +29,17 @@ import it.unibo.alchemist.model.scafi.ScafiIncarnationForAlchemist._
   *     urban environment.
   */
 class GradientWithCrowd extends AggregateProgram  with StandardSensors with BlockG with CrowdEstimationLib with ScafiAlchemistSupport with CustomSpawn with TimeUtils {
+  import SpawnInterface._
   override def main(): Any = {
     /* CROWD ESTIMATION
     *  * In FOCAS:
     * * p = 0.1; range = 15 // 30; wRange = 30 // 100; commRange = n.a.; avgThreshold = 2.17 people / m²;
     * sumThreshold = 300 people; maxDensity = 1.08 people / m²; timeFrame = 60; w = 0.25 (fraction of walkable space in the local urban environment)
     * */
-    // 48.210255,16.377142
     val source = node.get("isSource").asInstanceOf[Boolean]
     val destination = node.get("isDestination").asInstanceOf[Boolean]
-    val destinationPosition = new LatLongPosition(48.21023, 16.377142)
-    spawnDestination(source, destinationPosition)
+    init(source)
+    spawnDestination(source)
     val distToRiskZone = 30.0;
     val p = 0.005
     val crowdRange = 30
@@ -52,53 +52,70 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
     node.put("risk", crowding == AtRisk)
     val warning = computeWarning(100, crowding)
     node.put("warning", warning)
-    val channel = channelToDestination(source, destination, 30, warning)
-    node.put("_inChannel", channel._1)
-    node.put("distance", channel._2)
-    navigateChannel(source, channel)
-    removeDestination(isSource = source, destinationPosition)
+    sspawn[ID, Unit, Unit] (
+      src => arg => {
+        // TODO be aware of reanrtrace
+        val channel = channelToDestination(source, destination, 30, warning)
+        node.put("_inChannel", channel._1)
+        navigateChannel(source, channel)
+        val state = if (removeDestination(isSource = source)) Terminated else Bubble
+        POut((), state)
+      },
+      if (source && !isCloserToDestination()) Set(mid()) else Set.empty,
+      ()
+    )
+    exportData(source)
     warning
   }
 
-  private def removeDestination(isSource: Boolean, destination: Position[_]) = {
+  private def exportData(isSource: Boolean): Unit = {
+    if (isSource && node.has("exportKey")) {
+      node.put(node.get("exportKey"), distanceToDestination())
+    }
+    node.put("nodes", alchemistEnvironment.getNodes.size())
+  }
+
+  private def init(isSource: Boolean): Unit = {
+    if (isSource && !node.has("destinationPosition")) {
+      val lat = node.get("latDestination").asInstanceOf[Double]
+      val long = node.get("longDestination").asInstanceOf[Double]
+      val destination = new LatLongPosition(lat, long)
+      node.put("destinationPosition", destination)
+    }
+  }
+
+  private def isCloserToDestination(): Boolean = distanceToDestination() <= 5
+
+  private def distanceToDestination(): Double = {
     val myNode = alchemistEnvironment.getNodeByID(mid())
     val myPos = alchemistEnvironment.getPosition(myNode)
-    if (isSource && node.has("destinationId") &&
-        myPos.asInstanceOf[GeoPosition].distanceTo(destination.asInstanceOf[GeoPosition]) <= 5) {
+    if (node.has("destinationPosition")) {
+      return myPos.asInstanceOf[GeoPosition].distanceTo(node.get("destinationPosition").asInstanceOf[GeoPosition])
+    }
+    Double.PositiveInfinity
+  }
+
+  private def removeDestination(isSource: Boolean): Boolean = {
+    val myNode = alchemistEnvironment.getNodeByID(mid())
+    if (isSource && node.has("destinationId") && isCloserToDestination()) {
       alchemistEnvironment.removeNode(alchemistEnvironment.getNodeByID(node.get("destinationId")))
       node.remove("destinationId")
-      myNode.getReactions
+      val reactionToRemove = myNode.getReactions
         .stream()
         .filter { reaction => reaction.getActions.stream().map{ action => action.getClass.getSimpleName }.anyMatch {
           name => name.equals(classOf[TargetWalker[_]].getSimpleName) }
         }
         .findFirst()
-        .ifPresent(it => {
-          myNode.removeReaction(it)
-          node.remove("target")
-        })
+      if (reactionToRemove.isPresent) {
+        myNode.removeReaction(reactionToRemove.get())
+        node.remove("target")
+        return true
+      }
     }
+    false
   }
 
   private def navigateChannel(isSource: Boolean, channel: (Boolean, Double)) = {
-    if (isSource) {
-      val myNode = alchemistEnvironment.getNodeByID(mid())
-      val optNewPos = alchemistEnvironment.getNeighborhood(myNode).getNeighbors
-        .stream()
-        .filter(node => node.contains(new SimpleMolecule("_inChannel")))
-        .map(node => (node.getConcentration(new SimpleMolecule("_inChannel")).asInstanceOf[Boolean],
-          node.getConcentration(new SimpleMolecule("distance")).asInstanceOf[Double],
-          alchemistEnvironment.getPosition(node)))
-        .filter(node => node._1 && node._2 < channel._2 && node._2 > 0)
-        .max((n1, n2) => n1._2.compare(n2._2))
-        .map(node => node._3)
-      if (isSource && optNewPos.isPresent) {
-        node.put("target", optNewPos.get);
-      }
-    }
-  }
-
-  private def navigateChannel2(isSource: Boolean, channel: (Boolean, Double)) = {
     branch(channel._1 || isSource) {
       val myNode = alchemistEnvironment.getNodeByID(mid())
       val myPos = alchemistEnvironment.getPosition(myNode)
@@ -113,7 +130,7 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
     } {}
   }
 
-  private def spawnDestination(isSource: Boolean, destinationPosition: LatLongPosition): Unit = {
+  private def spawnDestination(isSource: Boolean): Unit = {
     val myNode = alchemistEnvironment.getNodeByID(mid())
     rep(init = true) {
       case true => {
@@ -124,7 +141,7 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
           destination.setConcentration(new SimpleMolecule("human"), false)
           destination.setConcentration(new SimpleMolecule("accessPoint"), true)
           destination.removeConcentration(new SimpleMolecule("target"))
-          alchemistEnvironment.addNode(destination, destinationPosition)
+          alchemistEnvironment.addNode(destination, node.get("destinationPosition").asInstanceOf[LatLongPosition])
           node.put("destinationId", destination.getId)
         }
         false
@@ -136,7 +153,7 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
   private def channelToDestination(source: Boolean, destination: Boolean, width: Double, warningZone: Boolean): (Boolean, Double) = {
     val ds = classicGradientWithShare(source, warningZone)
     val dd = classicGradientWithShare(destination, warningZone)
-    val db = distanceBetween(source, destination, () => if(warningZone) Double.PositiveInfinity else nbrRange())
+    val db = distanceBetween(source, destination, () => mux(warningZone) {Double.PositiveInfinity }{ nbrRange()})
     val inChannel = !(ds + dd == Double.PositiveInfinity && db == Double.PositiveInfinity) && ds + dd <= db + width
     (inChannel, if (inChannel) dd else Double.PositiveInfinity)
   }

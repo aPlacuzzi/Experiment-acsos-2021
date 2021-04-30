@@ -1,7 +1,7 @@
 variables:
 #  random: &random
 #    min: 0
-#    max: 29
+#    max: 5
 #    step: 1
 #    default: 2
   range: &range
@@ -16,7 +16,7 @@ variables:
     formula: 1/20
     language: scala
   retentionTime: &retentionTime
-    formula: Math.min(30.0, 50.0)
+    formula: 3.0 # Math.min(3.0, 30.0, 50.0) # TODO
     language: scala
   gridBottomLeftLat: &gridBottomLeftLat
     formula: 48.182
@@ -42,7 +42,21 @@ variables:
     default: 0.0055
 
 export:
+  # Time step of the simulation
   - time
+  # Number of nodes involved in the simulation
+  - molecule: nodes
+    aggregators: [ max ]
+    value-filter: FilterNaN
+  - molecule: S1Distance
+    aggregators: [ max ]
+    value-filter: FilterNaN
+  - molecule: S2Distance
+    aggregators: [ max ]
+    value-filter: FilterNaN
+  - molecule: S3Distance
+    aggregators: [ max ]
+    value-filter: FilterNaN
 
 seeds:
   scenario: 0 #*random
@@ -99,6 +113,14 @@ deployments:
         concentration: false
       - molecule: isDestination
         concentration: false
+      - molecule: S1Distance
+        concentration: 0.0
+      - molecule: S2Distance
+        concentration: 0.0
+      - molecule: S3Distance
+        concentration: 0.0
+      - molecule: nodes
+        concentration: 0
   - type: Grid
     parameters: [ *gridBottomLeftLat, *gridBottomLeftLong, *gridTopRightLat, *gridTopRightLong, *yStep, *xStep]#, 0.001, 0.001 ]
     programs:
@@ -114,42 +136,78 @@ deployments:
         concentration: false
       - molecule: isDestination
         concentration: false
-#  - type: Point
-#    parameters: [48.2057, 16.3419]
-#    programs:
-#      - *program
-#      - *moveToTarget
-#    contents:
-#      - molecule: range
-#        concentration: *range
-#      - molecule: human
-#        concentration: true
-#      - molecule: *accessPointMoleculeName
-#        concentration: false
-#      - molecule: isSource
-#        concentration: true
-#      - molecule: isDestination
-#        concentration: false
-#      - molecule: target
-#        concentration: "\"48.2057 16.3419\""
-#  - type: Point
-#    parameters: [ 48.1930, 16.3885 ]
-#    programs:
-#      - *program
-#      - *moveToTarget
-#    contents:
-#      - molecule: range
-#        concentration: *range
-#      - molecule: human
-#        concentration: true
-#      - molecule: *accessPointMoleculeName
-#        concentration: false
-#      - molecule: isSource
-#        concentration: true
-#      - molecule: isDestination
-#        concentration: false
-#      - molecule: target
-#        concentration: "\"48.1930 16.3885\""
+      - molecule: S1Distance
+        concentration: 0.0
+      - molecule: S2Distance
+        concentration: 0.0
+      - molecule: S3Distance
+        concentration: 0.0
+      - molecule: nodes
+        concentration: 0
+  - type: Point
+    parameters: [48.2057, 16.3419]
+    programs:
+      - *program
+      - *moveToTarget
+    contents:
+      - molecule: range
+        concentration: *range
+      - molecule: human
+        concentration: true
+      - molecule: *accessPointMoleculeName
+        concentration: false
+      - molecule: isSource
+        concentration: true
+      - molecule: isDestination
+        concentration: false
+      - molecule: target
+        concentration: "\"48.2057, 16.3419\""
+      - molecule: latDestination
+        concentration: 48.21023
+      - molecule: longDestination
+        concentration: 16.377142
+      - molecule: S1Distance
+        concentration: 0.0
+      - molecule: S2Distance
+        concentration: 0.0
+      - molecule: S3Distance
+        concentration: 0.0
+      - molecule: exportKey
+        concentration: "\"S1Distance\""
+      - molecule: nodes
+        concentration: 0
+  - type: Point
+    parameters: [ 48.1930, 16.3885 ]
+    programs:
+      - *program
+      - *moveToTarget
+    contents:
+      - molecule: range
+        concentration: *range
+      - molecule: human
+        concentration: true
+      - molecule: *accessPointMoleculeName
+        concentration: false
+      - molecule: isSource
+        concentration: true
+      - molecule: isDestination
+        concentration: false
+      - molecule: target
+        concentration: "\"48.1930 16.3885\""
+      - molecule: latDestination
+        concentration: 48.20564
+      - molecule: longDestination
+        concentration: 16.41500
+      - molecule: S1Distance
+        concentration: 0.0
+      - molecule: S2Distance
+        concentration: 0.0
+      - molecule: S3Distance
+        concentration: 0.0
+      - molecule: exportKey
+        concentration: "\"S2Distance\""
+      - molecule: nodes
+        concentration: 0
   - type: Point
     parameters: [ 48.2249, 16.3785 ]
     programs:
@@ -168,3 +226,17 @@ deployments:
         concentration: false
       - molecule: target
         concentration: "\"48.2249, 16.3785\""
+      - molecule: latDestination
+        concentration: 48.214455
+      - molecule: longDestination
+        concentration: 16.3660
+      - molecule: S1Distance
+        concentration: 0.0
+      - molecule: S2Distance
+        concentration: 0.0
+      - molecule: S3Distance
+        concentration: 0.0
+      - molecule: exportKey
+        concentration: "\"S3Distance\""
+      - molecule: nodes
+        concentration: 0

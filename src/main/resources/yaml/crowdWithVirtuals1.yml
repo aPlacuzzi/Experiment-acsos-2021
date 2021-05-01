@@ -3,7 +3,7 @@ variables:
     min: 0
     max: 2
     step: 1
-    default: 0 #2
+    default: 1 #2
   range: &range
     formula: 350
     language: scala

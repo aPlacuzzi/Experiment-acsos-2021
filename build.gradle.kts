@@ -17,7 +17,7 @@ repositories {
 dependencies {
     implementation("it.unibo.alchemist:alchemist:_")
     implementation("it.unibo.alchemist:alchemist-maps:_")
-    implementation("it.unibo.alchemist:alchemist-swingui:_")
+//    implementation("it.unibo.alchemist:alchemist-swingui:_")
     implementation("it.unibo.alchemist:alchemist-incarnation-protelis:_")
     implementation("it.unibo.alchemist:alchemist-incarnation-scafi:_")
     implementation("org.scala-lang:scala-library:2.13.4")
@@ -65,6 +65,7 @@ val timeArg: String? by project
 
 fun makeTest(
     file: String,
+    outputDir: String = "data",
     name: String = file,
     sampling: Double = 1.0,
     time: Double = Double.POSITIVE_INFINITY,
@@ -111,11 +112,11 @@ fun makeTest(
         if (debug) {
             jvmArgs("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044")
         }
-        File("data").mkdirs()
+        File(outputDir).mkdirs()
         args(
             "-y", "src/main/resources/yaml/${file}.yml",
             "-t", "$time",
-            "-e", "data/$datafilename",
+            "-e", "$outputDir/$datafilename",
             "-p", threadCount,
             "-i", "$sampling"
         )
@@ -140,4 +141,7 @@ createTask("gradient", "gradient", "gradient")
 createTask("crowdWithVirtuals", "crowdWithVirtuals", "caseStudy", "json")
 createTask("runScafi", "crowdWarningScafi", "crowd")
 createTask("runProtelis", "crowdWarningProtelis", "crowd")
-makeTest(name="batch", file = "crowdWithVirtuals", time = 1000.0, vars = setOf("xStep", "yStep"), taskSize = 1500)
+makeTest(name="batch", file = "crowdWithVirtuals", time = 700.0, vars = setOf("random"), taskSize = 1500, threads = 1, sampling = 10.0)
+makeTest(name="batch1", file = "crowdWithVirtuals1", time = 700.0, vars = setOf("random"), taskSize = 1500, threads = 1, sampling = 10.0, outputDir = "data1")
+makeTest(name="batch2", file = "crowdWithVirtuals2", time = 700.0, vars = setOf("random"), taskSize = 1500, threads = 1, sampling = 10.0, outputDir = "data2")
+makeTest(name="batch3", file = "crowdWithVirtuals3", time = 700.0, vars = setOf("random"), taskSize = 1500, threads = 1, sampling = 10.0, outputDir = "data2")

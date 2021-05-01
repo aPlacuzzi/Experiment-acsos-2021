@@ -3,7 +3,7 @@ variables:
     min: 0
     max: 2
     step: 1
-    default: 2
+    default: 0 #2
   range: &range
     formula: 350
     language: scala
@@ -144,38 +144,38 @@ deployments:
         concentration: 0.0
       - molecule: nodes
         concentration: 0
-  - type: Point
-    parameters: [48.2057, 16.3419]
-    programs:
-      - *program
-      - *moveToTarget
-    contents:
-      - molecule: range
-        concentration: *range
-      - molecule: human
-        concentration: true
-      - molecule: *accessPointMoleculeName
-        concentration: false
-      - molecule: isSource
-        concentration: true
-      - molecule: isDestination
-        concentration: false
-      - molecule: target
-        concentration: "\"48.2057, 16.3419\""
-      - molecule: latDestination
-        concentration: 48.21023
-      - molecule: longDestination
-        concentration: 16.377142
-      - molecule: S1Distance
-        concentration: 0.0
-      - molecule: S2Distance
-        concentration: 0.0
-      - molecule: S3Distance
-        concentration: 0.0
-      - molecule: exportKey
-        concentration: "\"S1Distance\""
-      - molecule: nodes
-        concentration: 0
+#  - type: Point
+#    parameters: [48.2057, 16.3419]
+#    programs:
+#      - *program
+#      - *moveToTarget
+#    contents:
+#      - molecule: range
+#        concentration: *range
+#      - molecule: human
+#        concentration: true
+#      - molecule: *accessPointMoleculeName
+#        concentration: false
+#      - molecule: isSource
+#        concentration: true
+#      - molecule: isDestination
+#        concentration: false
+#      - molecule: target
+#        concentration: "\"48.2057, 16.3419\""
+#      - molecule: latDestination
+#        concentration: 48.21023
+#      - molecule: longDestination
+#        concentration: 16.377142
+#      - molecule: S1Distance
+#        concentration: 0.0
+#      - molecule: S2Distance
+#        concentration: 0.0
+#      - molecule: S3Distance
+#        concentration: 0.0
+#      - molecule: exportKey
+#        concentration: "\"S1Distance\""
+#      - molecule: nodes
+#        concentration: 0
   - type: Point
     parameters: [ 48.1930, 16.3885 ]
     programs:
@@ -208,35 +208,35 @@ deployments:
         concentration: "\"S2Distance\""
       - molecule: nodes
         concentration: 0
-  - type: Point
-    parameters: [ 48.2249, 16.3785 ]
-    programs:
-      - *program
-      - *moveToTarget
-    contents:
-      - molecule: range
-        concentration: *range
-      - molecule: human
-        concentration: true
-      - molecule: *accessPointMoleculeName
-        concentration: false
-      - molecule: isSource
-        concentration: true
-      - molecule: isDestination
-        concentration: false
-      - molecule: target
-        concentration: "\"48.2249, 16.3785\""
-      - molecule: latDestination
-        concentration: 48.214455
-      - molecule: longDestination
-        concentration: 16.3660
-      - molecule: S1Distance
-        concentration: 0.0
-      - molecule: S2Distance
-        concentration: 0.0
-      - molecule: S3Distance
-        concentration: 0.0
-      - molecule: exportKey
-        concentration: "\"S3Distance\""
-      - molecule: nodes
-        concentration: 0
+#  - type: Point
+#    parameters: [ 48.2249, 16.3785 ]
+#    programs:
+#      - *program
+#      - *moveToTarget
+#    contents:
+#      - molecule: range
+#        concentration: *range
+#      - molecule: human
+#        concentration: true
+#      - molecule: *accessPointMoleculeName
+#        concentration: false
+#      - molecule: isSource
+#        concentration: true
+#      - molecule: isDestination
+#        concentration: false
+#      - molecule: target
+#        concentration: "\"48.2249, 16.3785\""
+#      - molecule: latDestination
+#        concentration: 48.214455
+#      - molecule: longDestination
+#        concentration: 16.3660
+#      - molecule: S1Distance
+#        concentration: 0.0
+#      - molecule: S2Distance
+#        concentration: 0.0
+#      - molecule: S3Distance
+#        concentration: 0.0
+#      - molecule: exportKey
+#        concentration: "\"S3Distance\""
+#      - molecule: nodes
+#        concentration: 0

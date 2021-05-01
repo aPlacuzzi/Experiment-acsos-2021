@@ -121,7 +121,7 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
       val myPos = alchemistEnvironment.getPosition(myNode)
       val optNewPos = includingSelf
         .mapNbrs(nbr((channel._2, myPos)))
-        .filter(entry => entry._2._1 < channel._2 && entry._2._1 > 0)
+        .filter(entry => entry._2._1 < channel._2)
         .maxByOption(entry => entry._2._1)
         .map(entry => entry._2._2)
       if (isSource && optNewPos.isDefined) {

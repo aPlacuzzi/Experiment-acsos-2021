@@ -38,7 +38,7 @@ variables:
   yStep: &yStep
     min: 0.0055
     max: 0.115
-    step: 0.1495 # 0.0219 # 5 step
+    step: 0.1095 # 0.0219 # 5 step
     default: 0.0055
 
 export:

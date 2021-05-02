@@ -62,7 +62,7 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
         val state = if (removeDestination(isSource = isChannelSource)) Terminated else Bubble
         POut((), state)
       },
-      if (isSource && !isCloserToDestination()) Set(mid()) else Set.empty,
+      if (isSource && checkStartTime() && !isCloserToDestination()) Set(mid()) else Set.empty,
       ()
     )
     exportData(isSource)
@@ -86,6 +86,8 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
   }
 
   private def isCloserToDestination(): Boolean = distanceToDestination() <= 5
+
+  private def checkStartTime(): Boolean =alchemistTimestamp.toDouble >= node.getOrElse("startTime", Double.PositiveInfinity)
 
   private def distanceToDestination(): Double = {
     val myNode = alchemistEnvironment.getNodeByID(mid())
@@ -134,9 +136,8 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
   private def spawnDestination(isSource: Boolean): Unit = {
     val myNode = alchemistEnvironment.getNodeByID(mid())
     rep(init = true) {
-      case true => {
-        mux (isSource &&
-            node.get("startTime").asInstanceOf[Double] >= alchemistTimestamp.toDouble) {
+      case true =>
+        branch (isSource && checkStartTime()) {
           val destination = myNode.cloneNode(alchemistTimestamp)
           destination.setConcentration(new SimpleMolecule("isSource"), false)
           destination.setConcentration(new SimpleMolecule("isDestination"), true)
@@ -147,10 +148,9 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
           alchemistEnvironment.addNode(destination, node.get("destinationPosition").asInstanceOf[LatLongPosition])
           node.put("destinationId", destination.getId)
           false
-        } {
+        }  {
           true
         }
-      }
       case _ => false
     }
   }

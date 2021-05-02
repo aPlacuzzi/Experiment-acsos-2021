@@ -54,7 +54,7 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
     sspawn[ID, Unit, Unit] (
       src => arg => {
         val isChannelSource = isSource && mid() == src
-        val isChannelDestination = node.get("isDestination").asInstanceOf[Boolean] && node.get("sourceId") == mid()
+        val isChannelDestination = node.get("isDestination").asInstanceOf[Boolean] && node.get("sourceId") == src
         // TODO be aware of reanrtrace
         val channel = channelToDestination(isChannelSource, isChannelDestination, 30, warning)
         node.put("_inChannel", channel._1)

@@ -230,6 +230,8 @@ deployments:
         concentration: 48.214455
       - molecule: longDestination
         concentration: 16.3660
+      - molecule: startTime
+        concentration: 100.0
       - molecule: S1Distance
         concentration: 0.0
       - molecule: S2Distance

@@ -135,7 +135,8 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
     val myNode = alchemistEnvironment.getNodeByID(mid())
     rep(init = true) {
       case true => {
-        if (isSource) {
+        mux (isSource &&
+            node.get("startTime").asInstanceOf[Double] >= alchemistTimestamp.toDouble) {
           val destination = myNode.cloneNode(alchemistTimestamp)
           destination.setConcentration(new SimpleMolecule("isSource"), false)
           destination.setConcentration(new SimpleMolecule("isDestination"), true)
@@ -145,8 +146,10 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
           destination.removeConcentration(new SimpleMolecule("target"))
           alchemistEnvironment.addNode(destination, node.get("destinationPosition").asInstanceOf[LatLongPosition])
           node.put("destinationId", destination.getId)
+          false
+        } {
+          true
         }
-        false
       }
       case _ => false
     }

@@ -36,10 +36,9 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
     * * p = 0.1; range = 15 // 30; wRange = 30 // 100; commRange = n.a.; avgThreshold = 2.17 people / m²;
     * sumThreshold = 300 people; maxDensity = 1.08 people / m²; timeFrame = 60; w = 0.25 (fraction of walkable space in the local urban environment)
     * */
-    val source = node.get("isSource").asInstanceOf[Boolean]
-    val destination = node.get("isDestination").asInstanceOf[Boolean]
-    init(source)
-    spawnDestination(source)
+    val isSource = node.get("isSource").asInstanceOf[Boolean]
+    init(isSource)
+    spawnDestination(isSource)
     val distToRiskZone = 30.0;
     val p = 0.005
     val crowdRange = 30
@@ -54,17 +53,19 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
     node.put("warning", warning)
     sspawn[ID, Unit, Unit] (
       src => arg => {
+        val isChannelSource = isSource && mid() == src
+        val isChannelDestination = node.get("isDestination").asInstanceOf[Boolean] && node.get("sourceId") == mid()
         // TODO be aware of reanrtrace
-        val channel = channelToDestination(source, destination, 30, warning)
+        val channel = channelToDestination(isChannelSource, isChannelDestination, 30, warning)
         node.put("_inChannel", channel._1)
-        navigateChannel(source, channel)
-        val state = if (removeDestination(isSource = source)) Terminated else Bubble
+        navigateChannel(isChannelSource, channel)
+        val state = if (removeDestination(isSource = isChannelSource)) Terminated else Bubble
         POut((), state)
       },
-      if (source && !isCloserToDestination()) Set(mid()) else Set.empty,
+      if (isSource && !isCloserToDestination()) Set(mid()) else Set.empty,
       ()
     )
-    exportData(source)
+    exportData(isSource)
     warning
   }
 
@@ -140,6 +141,7 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
           destination.setConcentration(new SimpleMolecule("isDestination"), true)
           destination.setConcentration(new SimpleMolecule("human"), false)
           destination.setConcentration(new SimpleMolecule("accessPoint"), true)
+          destination.setConcentration(new SimpleMolecule("sourceId"), mid())
           destination.removeConcentration(new SimpleMolecule("target"))
           alchemistEnvironment.addNode(destination, node.get("destinationPosition").asInstanceOf[LatLongPosition])
           node.put("destinationId", destination.getId)

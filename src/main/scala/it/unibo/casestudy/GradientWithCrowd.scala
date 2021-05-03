@@ -145,6 +145,7 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
           destination.setConcentration(new SimpleMolecule("accessPoint"), true)
           destination.setConcentration(new SimpleMolecule("sourceId"), mid())
           destination.removeConcentration(new SimpleMolecule("target"))
+          destination.setConcentration(new SimpleMolecule(node.get("exportKey")), Double.MinValue) // reset export data
           alchemistEnvironment.addNode(destination, node.get("destinationPosition").asInstanceOf[LatLongPosition])
           node.put("destinationId", destination.getId)
           false

@@ -30,15 +30,10 @@ variables:
   gridTopRightLong: &gridTopRightLong
     formula: 16.423
     language: scala
-  xStep: &xStep
+  gridStep: &gridStep
     min: 0.0055
-    max: 0.045
-    step: 0.0395 #0.0079 # 5 step
-    default: 0.0055
-  yStep: &yStep
-    min: 0.0055
-    max: 0.115
-    step: 0.1095 # 0.0219 # 5 step
+    max: 1.0055
+    step: 1.0 # only two step (0.0055 -> yes grid, 1.0055 -> no grid)
     default: 0.0055
 
 export:
@@ -122,7 +117,7 @@ deployments:
       - molecule: nodes
         concentration: 0
   - type: Grid
-    parameters: [ *gridBottomLeftLat, *gridBottomLeftLong, *gridTopRightLat, *gridTopRightLong, *yStep, *xStep]#, 0.001, 0.001 ]
+    parameters: [ *gridBottomLeftLat, *gridBottomLeftLong, *gridTopRightLat, *gridTopRightLong, *gridStep, *gridStep]#, 0.001, 0.001 ]
     programs:
       - *program
     contents:

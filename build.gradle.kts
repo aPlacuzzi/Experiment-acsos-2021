@@ -100,6 +100,7 @@ fun makeTest(
     val today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
 
     task<JavaExec>(name) {
+        group = alchemistGroup // This is for better organization when running ./gradlew tasks
         val datafilename = "${today}-" +  (baseDataFileName ?: name)
         dependsOn("build")
         classpath = sourceSets["main"].runtimeClasspath
@@ -124,7 +125,7 @@ fun makeTest(
             args("-b", "-var", *vars.toTypedArray())
         }
         if(effects != null){
-            args("-g", effects)
+            args("-g",  "src/main/resources/${effects}")
         }
     }
     /*tasks {
@@ -141,7 +142,8 @@ createTask("gradient", "gradient", "gradient")
 createTask("crowdWithVirtuals", "crowdWithVirtuals", "caseStudy", "json")
 createTask("runScafi", "crowdWarningScafi", "crowd")
 createTask("runProtelis", "crowdWarningProtelis", "crowd")
-makeTest(name="batch", file = "crowdWithVirtuals", time = 700.0, vars = setOf("random"), taskSize = 1500, sampling = 10.0)
-makeTest(name="batch1", file = "crowdWithVirtuals1", time = 700.0, vars = setOf("random"), taskSize = 1500, threads = 1, sampling = 10.0, outputDir = "data1")
+makeTest(name="batch", file = "crowdWithVirtuals", time = 700.0, vars = setOf("random"), taskSize = 1500, sampling = 10.0)//, effects = "caseStudy.json")
+makeTest(name="batchNg", file = "crowdWithVirtualsNg", time = 700.0, vars = setOf("random"), taskSize = 1500, sampling = 10.0)
+makeTest(name="batch1", file = "crowdWithVirtuals1", time = 700.0, taskSize = 1500, threads = 1, sampling = 10.0, outputDir = "data1")//, effects = "caseStudy.json")
 makeTest(name="batch2", file = "crowdWithVirtuals2", time = 700.0, vars = setOf("random"), taskSize = 1500, threads = 1, sampling = 10.0, outputDir = "data2")
 makeTest(name="batch3", file = "crowdWithVirtuals3", time = 700.0, vars = setOf("random"), taskSize = 1500, threads = 1, sampling = 10.0, outputDir = "data3")//, effects = "caseStudy.json")

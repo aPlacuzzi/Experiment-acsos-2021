@@ -8,10 +8,19 @@ plugins {
     id("com.github.johnrengelman.shadow") version "4.0.3"
     idea
     kotlin("jvm") version "1.3.50"
+    `maven`
 }
 
 repositories {
     mavenCentral()
+    maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/alchemistsimulator/alchemist")
+        credentials {
+            username = "aPlacuzzi"
+            password = "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"
+        }
+    }
 }
 
 dependencies {

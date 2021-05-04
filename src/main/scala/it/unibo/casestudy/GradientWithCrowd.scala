@@ -82,6 +82,7 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
       val long = node.get("longDestination").asInstanceOf[Double]
       val destination = new LatLongPosition(lat, long)
       node.put("destinationPosition", destination)
+      node.put("previousTarget", Set[GeoPosition]())
     }
   }
 
@@ -130,8 +131,10 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
         .maxByOption(entry => entry._2._1)
         .map(entry => entry._2._2)
       if (isSource && optNewPos.isDefined && !optNewPos.get.equals(node.get("target"))) {
-        node.put("previousTarget", node.getOrElse("previousTarget", Set[GeoPosition]()) + node.get("target"))
-        node.put("target", optNewPos.get);
+        if (myPos.asInstanceOf[GeoPosition].equals(node.get("target"))) {
+          node.put("previousTarget", node.get("previousTarget").asInstanceOf[Set[GeoPosition]] + node.get("target"))
+        }
+        node.put("target", optNewPos.get)
       }
     } {}
   }

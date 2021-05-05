@@ -82,7 +82,6 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
       val long = node.get("longDestination").asInstanceOf[Double]
       val destination = new LatLongPosition(lat, long)
       node.put("destinationPosition", destination)
-      node.put("previousTarget", Set[GeoPosition]())
     }
   }
 
@@ -123,16 +122,16 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
     branch(channel._1 || isSource) {
       val myNode = alchemistEnvironment.getNodeByID(mid())
       val myPos = alchemistEnvironment.getPosition(myNode)
-      val previousTarget = node.getOption[Set[GeoPosition]]("previousTarget")
+      val previousTarget = node.getOption[GeoPosition]("previousTarget")
       val optNewPos = includingSelf
         .mapNbrs(nbr((channel._2, myPos)))
-        .filter(entry => previousTarget.isEmpty || !previousTarget.get.contains(entry._2._2.asInstanceOf[GeoPosition]))
+        .filter(entry => previousTarget.isEmpty || !previousTarget.get.equals(entry._2._2.asInstanceOf[GeoPosition]))
         .filter(entry => entry._2._1 < channel._2)
         .maxByOption(entry => entry._2._1)
         .map(entry => entry._2._2)
       if (isSource && optNewPos.isDefined && !optNewPos.get.equals(node.get("target"))) {
         if (myPos.asInstanceOf[GeoPosition].equals(node.get("target"))) {
-          node.put("previousTarget", node.get("previousTarget").asInstanceOf[Set[GeoPosition]] + node.get("target"))
+          node.put("previousTarget", node.get("target"))
         }
         node.put("target", optNewPos.get)
       }

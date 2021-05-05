@@ -134,7 +134,7 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
         .mapNbrs(nbr((channel._2, myPos)))
         .filter(entry => previousTarget.isEmpty || !previousTarget.get.equals(entry._2._2.asInstanceOf[GeoPosition]))
         .filter(entry => entry._2._1 < channel._2)
-        .maxByOption(entry => entry._2._1)
+        .minByOption(entry => entry._2._1)
         .map(entry => entry._2._2)
       if (isSource && optNewPos.isDefined && !optNewPos.get.equals(node.get("target"))) {
         if (myPos.asInstanceOf[GeoPosition].equals(node.get("target"))) {

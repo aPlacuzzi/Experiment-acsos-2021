@@ -112,7 +112,7 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
         .findFirst()
       if (reactionToRemove.isPresent) {
         myNode.removeReaction(reactionToRemove.get())
-        node.remove("target")
+//        node.remove("target")
         return true
       }
     }

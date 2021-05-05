@@ -85,7 +85,7 @@ _pools:
         actions:
           - *ReproduceGPSTrace
   - pool: &moveToTarget
-      - time-distribution: 0.5
+      - time-distribution: 0.25
         type: Event
         actions:
           - type: TargetWalker

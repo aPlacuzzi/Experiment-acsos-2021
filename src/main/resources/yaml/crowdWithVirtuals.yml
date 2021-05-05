@@ -3,7 +3,7 @@ variables:
     min: 0
     max: 2
     step: 1
-    default: 2
+    default: 1 #2
   range: &range
     formula: 350
     language: scala
@@ -34,7 +34,7 @@ variables:
     min: 0.0055
     max: 1.0055
     step: 1.0 # only two step (0.0055 -> yes grid, 1.0055 -> no grid)
-    default: 0.0055
+    default: 1.0055 #0.0055
 
 export:
   # Time step of the simulation
@@ -50,6 +50,24 @@ export:
     aggregators: [ max ]
     value-filter: FilterNaN
   - molecule: S3Distance
+    aggregators: [ max ]
+    value-filter: FilterNaN
+  - molecule: S1ChannelDistance
+    aggregators: [ max ]
+    value-filter: FilterNaN
+  - molecule: S2ChannelDistance
+    aggregators: [ max ]
+    value-filter: FilterNaN
+  - molecule: S3ChannelDistance
+    aggregators: [ max ]
+    value-filter: FilterNaN
+  - molecule: S1DistanceTraveled
+    aggregators: [ max ]
+    value-filter: FilterNaN
+  - molecule: S2DistanceTraveled
+    aggregators: [ max ]
+    value-filter: FilterNaN
+  - molecule: S3DistanceTraveled
     aggregators: [ max ]
     value-filter: FilterNaN
 
@@ -114,6 +132,18 @@ deployments:
         concentration: 0.0
       - molecule: S3Distance
         concentration: 0.0
+      - molecule: S1ChannelDistance
+        concentration: 0.0
+      - molecule: S2ChannelDistance
+        concentration: 0.0
+      - molecule: S3ChannelDistance
+        concentration: 0.0
+      - molecule: S1DistanceTraveled
+        concentration: 0.0
+      - molecule: S2DistanceTraveled
+        concentration: 0.0
+      - molecule: S3DistanceTraveled
+        concentration: 0.0
       - molecule: nodes
         concentration: 0
   - type: Grid
@@ -136,6 +166,18 @@ deployments:
       - molecule: S2Distance
         concentration: 0.0
       - molecule: S3Distance
+        concentration: 0.0
+      - molecule: S1ChannelDistance
+        concentration: 0.0
+      - molecule: S2ChannelDistance
+        concentration: 0.0
+      - molecule: S3ChannelDistance
+        concentration: 0.0
+      - molecule: S1DistanceTraveled
+        concentration: 0.0
+      - molecule: S2DistanceTraveled
+        concentration: 0.0
+      - molecule: S3DistanceTraveled
         concentration: 0.0
       - molecule: nodes
         concentration: 0
@@ -169,8 +211,20 @@ deployments:
         concentration: 0.0
       - molecule: S3Distance
         concentration: 0.0
-      - molecule: exportKey
-        concentration: "\"S1Distance\""
+      - molecule: S1ChannelDistance
+        concentration: 0.0
+      - molecule: S2ChannelDistance
+        concentration: 0.0
+      - molecule: S3ChannelDistance
+        concentration: 0.0
+      - molecule: S1DistanceTraveled
+        concentration: 0.0
+      - molecule: S2DistanceTraveled
+        concentration: 0.0
+      - molecule: S3DistanceTraveled
+        concentration: 0.0
+      - molecule: exportPrefix
+        concentration: "\"S1\""
       - molecule: nodes
         concentration: 0
   - type: Point
@@ -203,8 +257,20 @@ deployments:
         concentration: 0.0
       - molecule: S3Distance
         concentration: 0.0
-      - molecule: exportKey
-        concentration: "\"S2Distance\""
+      - molecule: S1ChannelDistance
+        concentration: 0.0
+      - molecule: S2ChannelDistance
+        concentration: 0.0
+      - molecule: S3ChannelDistance
+        concentration: 0.0
+      - molecule: S1DistanceTraveled
+        concentration: 0.0
+      - molecule: S2DistanceTraveled
+        concentration: 0.0
+      - molecule: S3DistanceTraveled
+        concentration: 0.0
+      - molecule: exportPrefix
+        concentration: "\"S2\""
       - molecule: nodes
         concentration: 0
   - type: Point
@@ -237,7 +303,19 @@ deployments:
         concentration: 0.0
       - molecule: S3Distance
         concentration: 0.0
-      - molecule: exportKey
-        concentration: "\"S3Distance\""
+      - molecule: S1ChannelDistance
+        concentration: 0.0
+      - molecule: S2ChannelDistance
+        concentration: 0.0
+      - molecule: S3ChannelDistance
+        concentration: 0.0
+      - molecule: S1DistanceTraveled
+        concentration: 0.0
+      - molecule: S2DistanceTraveled
+        concentration: 0.0
+      - molecule: S3DistanceTraveled
+        concentration: 0.0
+      - molecule: exportPrefix
+        concentration: "\"S3\""
       - molecule: nodes
         concentration: 0

@@ -58,6 +58,9 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
         // TODO be aware of reanrtrace
         val channel = channelToDestination(isChannelSource, isChannelDestination, 30, warning)
         node.put("_inChannel", channel._1)
+        if (src == mid()) {
+          node.put("_channelDistance", channel._2)
+        }
         navigateChannel(isChannelSource, channel)
         val state = if (removeDestination(isSource = isChannelSource)) Terminated else Bubble
         POut((), state)
@@ -70,8 +73,21 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
   }
 
   private def exportData(isSource: Boolean): Unit = {
-    if (isSource && node.has("exportKey")) {
-      node.put(node.get("exportKey"), distanceToDestination())
+    if (isSource && node.has("exportPrefix")) {
+      val prefix = node.get("exportPrefix").asInstanceOf[String]
+      node.put(prefix + "Distance", distanceToDestination())
+      if (node.has("destinationId") && node.has("_channelDistance")) {
+        node.put(prefix + "ChannelDistance", node.get("_channelDistance"))
+      } else {
+        node.put(prefix + "ChannelDistance", 0.0)
+      }
+      val myNode = alchemistEnvironment.getNodeByID(mid())
+      val myPos = alchemistEnvironment.getPosition(myNode).asInstanceOf[GeoPosition]
+      val distanceTraveled = node.getOption[GeoPosition]("previousPosition")
+        .map(previousPos => previousPos.distanceTo(myPos))
+        .getOrElse(0.0)
+      node.put("previousPosition", myPos)
+      node.put(prefix + "DistanceTraveled", node.getOrElse(prefix + "DistanceTraveled", 0.0) + distanceTraveled)
     }
     node.put("nodes", alchemistEnvironment.getNodes.size())
   }

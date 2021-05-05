@@ -85,7 +85,14 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
     }
   }
 
-  private def isCloserToDestination(): Boolean = distanceToDestination() <= 5
+  //private def isCloserToDestination(): Boolean = distanceToDestination() <= 5
+
+  private def isCloserToDestination(): Boolean = {
+    val myNode = alchemistEnvironment.getNodeByID(mid())
+    val myPos = alchemistEnvironment.getPosition(myNode)
+    node.getOption[GeoPosition]("destinationPosition")
+      .exists(pos => pos.equals(myPos.asInstanceOf[GeoPosition]))
+  }
 
   private def checkStartTime(): Boolean =alchemistTimestamp.toDouble >= node.getOrElse("startTime", Double.PositiveInfinity)
 

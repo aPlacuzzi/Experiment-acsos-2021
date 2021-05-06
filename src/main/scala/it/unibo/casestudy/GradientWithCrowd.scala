@@ -90,6 +90,7 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
       node.put(prefix + "DistanceTraveled", node.getOrElse(prefix + "DistanceTraveled", 0.0) + distanceTraveled)
     }
     node.put("nodes", alchemistEnvironment.getNodes.size())
+    node.put("rounds", node.getOrElse("rounds", 0) + 1)
   }
 
   private def init(isSource: Boolean): Unit = {

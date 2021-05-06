@@ -13,14 +13,6 @@ plugins {
 
 repositories {
     mavenCentral()
-    maven {
-        name = "GitHubPackages"
-        url = uri("https://maven.pkg.github.com/alchemistsimulator/alchemist")
-        credentials {
-            username = "aPlacuzzi"
-            password = "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"
-        }
-    }
 }
 
 dependencies {

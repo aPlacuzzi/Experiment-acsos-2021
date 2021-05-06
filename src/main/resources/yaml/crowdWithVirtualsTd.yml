@@ -1,0 +1,351 @@
+variables:
+  random: &random
+    min: 0
+    max: 10
+    step: 1
+    default: 0 #2
+  range: &range
+    formula: 350
+    language: scala
+  aprange: &aprange
+    formula: 1000
+    language: scala
+  accessPointName: &accessPointMoleculeName
+    formula: "\"accessPoint\""
+  moveFrequency: &moveFrequency
+    formula: 1/20
+    language: scala
+  retentionTime: &retentionTime
+    formula: 3.0 # Math.min(3.0, 30.0, 50.0) # TODO
+    language: scala
+  gridBottomLeftLat: &gridBottomLeftLat
+    formula: 48.182
+    language: scala
+  gridBottomLeftLong: &gridBottomLeftLong
+    formula: 16.308
+    language: scala
+  gridTopRightLat: &gridTopRightLat
+    formula: 48.2270
+    language: scala
+  gridTopRightLong: &gridTopRightLong
+    formula: 16.423
+    language: scala
+  gridStep: &gridStep
+    min: 0.0055
+    max: 1.0055
+    step: 1.0 # only two step (0.0055 -> yes grid, 1.0055 -> no grid)
+    default: 0.0055 #0.0055
+  frequency: &frequency
+    formula: "\"frequency\""
+  defaultFrequency: &defaultFrequency
+    formula: 0
+    language: scala
+
+export:
+  # Time step of the simulation
+  - time
+  # Number of nodes involved in the simulation
+  - molecule: nodes
+    aggregators: [ max ]
+    value-filter: FilterNaN
+  - molecule: S1Distance
+    aggregators: [ max ]
+    value-filter: FilterNaN
+  - molecule: S2Distance
+    aggregators: [ max ]
+    value-filter: FilterNaN
+  - molecule: S3Distance
+    aggregators: [ max ]
+    value-filter: FilterNaN
+  - molecule: S1ChannelDistance
+    aggregators: [ max ]
+    value-filter: FilterNaN
+  - molecule: S2ChannelDistance
+    aggregators: [ max ]
+    value-filter: FilterNaN
+  - molecule: S3ChannelDistance
+    aggregators: [ max ]
+    value-filter: FilterNaN
+  - molecule: S1DistanceTraveled
+    aggregators: [ max ]
+    value-filter: FilterNaN
+  - molecule: S2DistanceTraveled
+    aggregators: [ max ]
+    value-filter: FilterNaN
+  - molecule: S3DistanceTraveled
+    aggregators: [ max ]
+    value-filter: FilterNaN
+  - molecule: rounds
+    aggregators: [ sum ]
+    value-filter: FilterNaN
+
+seeds:
+  scenario: *random
+  simulation: *random
+
+incarnation: scafi
+
+_ReproduceGPSTrace: &ReproduceGPSTrace
+  type: ReproduceGPSTrace
+  parameters: ["vcmuser.gpx", false, AlignToTime, 1365922800, false, false]
+
+environment:
+  type: OSMEnvironment
+  parameters: ["vcm.pbf", false]
+
+network-model:
+  type: CustomConnectWithinDistance #ConnectWithinDistance #*connectionType
+  parameters: [*range, *aprange, *accessPointMoleculeName]
+
+_pools:
+  - pool: &program
+      - time-distribution: 1
+        type: Event
+        actions:
+          - type: RunScafiProgram
+            parameters: [ "it.unibo.casestudy.GradientWithCrowd", *retentionTime ]
+      - program: send
+  - pool: &programTd
+      - time-distribution:
+          type: MoleculeControlledTimeDistribution
+          parameters: ["frequency"]
+        type: Event
+        actions:
+          - type: RunScafiProgram
+            parameters: ["it.unibo.casestudy.GradientWithCrowd", *retentionTime]
+      - program: send
+  - pool: &move
+      - time-distribution: 0.1
+        type: Event
+        actions:
+          - *ReproduceGPSTrace
+  - pool: &moveToTarget
+      - time-distribution: 0.25
+        type: Event
+        actions:
+          - type: TargetWalker
+            parameters: ["target", 5.0]
+
+deployments:
+  - type: FromGPSTrace
+    parameters: [ 1497, "vcmuser.gpx", false, AlignToTime, 1365922800, false, false ] #1497
+    programs:
+      - *move
+      - *program
+    contents:
+      - molecule: range
+        concentration: *range
+      - molecule: human
+        concentration: true
+      - molecule: *accessPointMoleculeName
+        concentration: false
+      - molecule: isSource
+        concentration: false
+      - molecule: isDestination
+        concentration: false
+      - molecule: S1Distance
+        concentration: 0.0
+      - molecule: S2Distance
+        concentration: 0.0
+      - molecule: S3Distance
+        concentration: 0.0
+      - molecule: S1ChannelDistance
+        concentration: 0.0
+      - molecule: S2ChannelDistance
+        concentration: 0.0
+      - molecule: S3ChannelDistance
+        concentration: 0.0
+      - molecule: S1DistanceTraveled
+        concentration: 0.0
+      - molecule: S2DistanceTraveled
+        concentration: 0.0
+      - molecule: S3DistanceTraveled
+        concentration: 0.0
+      - molecule: nodes
+        concentration: 0
+      - molecule: rounds
+        concentration: 0
+  - type: Grid
+    parameters: [ *gridBottomLeftLat, *gridBottomLeftLong, *gridTopRightLat, *gridTopRightLong, *gridStep, *gridStep]#, 0.001, 0.001 ]
+    programs:
+      - *programTd
+    contents:
+      - molecule: range
+        concentration: *range
+      - molecule: human
+        concentration: false
+      - molecule: *accessPointMoleculeName
+        concentration: true
+      - molecule: isSource
+        concentration: false
+      - molecule: isDestination
+        concentration: false
+      - molecule: S1Distance
+        concentration: 0.0
+      - molecule: S2Distance
+        concentration: 0.0
+      - molecule: S3Distance
+        concentration: 0.0
+      - molecule: S1ChannelDistance
+        concentration: 0.0
+      - molecule: S2ChannelDistance
+        concentration: 0.0
+      - molecule: S3ChannelDistance
+        concentration: 0.0
+      - molecule: S1DistanceTraveled
+        concentration: 0.0
+      - molecule: S2DistanceTraveled
+        concentration: 0.0
+      - molecule: S3DistanceTraveled
+        concentration: 0.0
+      - molecule: nodes
+        concentration: 0
+      - molecule: *frequency
+        concentration: *defaultFrequency
+      - molecule: rounds
+        concentration: 0
+  - type: Point
+    parameters: [48.2057, 16.3419]
+    programs:
+      - *program
+      - *moveToTarget
+    contents:
+      - molecule: range
+        concentration: *range
+      - molecule: human
+        concentration: true
+      - molecule: *accessPointMoleculeName
+        concentration: false
+      - molecule: isSource
+        concentration: true
+      - molecule: isDestination
+        concentration: false
+      - molecule: target
+        concentration: "\"48.2057, 16.3419\""
+      - molecule: latDestination
+        concentration: 48.21023
+      - molecule: longDestination
+        concentration: 16.377142
+      - molecule: startTime
+        concentration: 10.0
+      - molecule: S1Distance
+        concentration: 0.0
+      - molecule: S2Distance
+        concentration: 0.0
+      - molecule: S3Distance
+        concentration: 0.0
+      - molecule: S1ChannelDistance
+        concentration: 0.0
+      - molecule: S2ChannelDistance
+        concentration: 0.0
+      - molecule: S3ChannelDistance
+        concentration: 0.0
+      - molecule: S1DistanceTraveled
+        concentration: 0.0
+      - molecule: S2DistanceTraveled
+        concentration: 0.0
+      - molecule: S3DistanceTraveled
+        concentration: 0.0
+      - molecule: exportPrefix
+        concentration: "\"S1\""
+      - molecule: nodes
+        concentration: 0
+      - molecule: rounds
+        concentration: 0
+  - type: Point
+    parameters: [ 48.1930, 16.3885 ]
+    programs:
+      - *program
+      - *moveToTarget
+    contents:
+      - molecule: range
+        concentration: *range
+      - molecule: human
+        concentration: true
+      - molecule: *accessPointMoleculeName
+        concentration: false
+      - molecule: isSource
+        concentration: true
+      - molecule: isDestination
+        concentration: false
+      - molecule: target
+        concentration: "\"48.1930 16.3885\""
+      - molecule: latDestination
+        concentration: 48.20564
+      - molecule: longDestination
+        concentration: 16.41500
+      - molecule: startTime
+        concentration: 40.0
+      - molecule: S1Distance
+        concentration: 0.0
+      - molecule: S2Distance
+        concentration: 0.0
+      - molecule: S3Distance
+        concentration: 0.0
+      - molecule: S1ChannelDistance
+        concentration: 0.0
+      - molecule: S2ChannelDistance
+        concentration: 0.0
+      - molecule: S3ChannelDistance
+        concentration: 0.0
+      - molecule: S1DistanceTraveled
+        concentration: 0.0
+      - molecule: S2DistanceTraveled
+        concentration: 0.0
+      - molecule: S3DistanceTraveled
+        concentration: 0.0
+      - molecule: exportPrefix
+        concentration: "\"S2\""
+      - molecule: nodes
+        concentration: 0
+      - molecule: rounds
+        concentration: 0
+  - type: Point
+    parameters: [ 48.2249, 16.3785 ]
+    programs:
+      - *program
+      - *moveToTarget
+    contents:
+      - molecule: range
+        concentration: *range
+      - molecule: human
+        concentration: true
+      - molecule: *accessPointMoleculeName
+        concentration: false
+      - molecule: isSource
+        concentration: true
+      - molecule: isDestination
+        concentration: false
+      - molecule: target
+        concentration: "\"48.2249, 16.3785\""
+      - molecule: latDestination
+        concentration: 48.214455
+      - molecule: longDestination
+        concentration: 16.3660
+      - molecule: startTime
+        concentration: 100.0
+      - molecule: S1Distance
+        concentration: 0.0
+      - molecule: S2Distance
+        concentration: 0.0
+      - molecule: S3Distance
+        concentration: 0.0
+      - molecule: S1ChannelDistance
+        concentration: 0.0
+      - molecule: S2ChannelDistance
+        concentration: 0.0
+      - molecule: S3ChannelDistance
+        concentration: 0.0
+      - molecule: S1DistanceTraveled
+        concentration: 0.0
+      - molecule: S2DistanceTraveled
+        concentration: 0.0
+      - molecule: S3DistanceTraveled
+        concentration: 0.0
+      - molecule: exportPrefix
+        concentration: "\"S3\""
+      - molecule: nodes
+        concentration: 0
+      - molecule: rounds
+        concentration: 0
+

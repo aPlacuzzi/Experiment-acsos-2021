@@ -51,6 +51,7 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
     node.put("risk", crowding == AtRisk)
     val warning = computeWarning(100, crowding)
     node.put("warning", warning)
+    var channelCount = 0
     sspawn[ID, Unit, Unit] (
       src => arg => {
         val isChannelSource = isSource && mid() == src
@@ -61,6 +62,9 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
         if (src == mid()) {
           node.put("_channelDistance", channel._2)
         }
+        if (channel._1) {
+          channelCount += 1
+        }
         navigateChannel(isChannelSource, channel)
         val state = if (removeDestination(isSource = isChannelSource)) Terminated else Bubble
         POut((), state)
@@ -68,6 +72,11 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
       if (isSource && checkStartTime() && !isCloserToDestination()) Set(mid()) else Set.empty,
       ()
     )
+    if (channelCount == 0 && node.has("frequency")) {
+      node.put("frequency", 5)
+    } else {
+      node.put("frequency", 1)
+    }
     exportData(isSource)
     warning
   }

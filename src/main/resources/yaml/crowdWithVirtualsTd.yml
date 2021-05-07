@@ -221,7 +221,7 @@ deployments:
       - molecule: isDestination
         concentration: false
       - molecule: target
-        concentration: "\"48.2057, 16.3419\""
+        concentration: List(48.2057, 16.3419)
       - molecule: latDestination
         concentration: 48.21023
       - molecule: longDestination
@@ -247,7 +247,7 @@ deployments:
       - molecule: S3DistanceTraveled
         concentration: 0.0
       - molecule: exportPrefix
-        concentration: "\"S1\""
+        concentration: '"S1".toString'
       - molecule: nodes
         concentration: 0
       - molecule: rounds
@@ -269,7 +269,7 @@ deployments:
       - molecule: isDestination
         concentration: false
       - molecule: target
-        concentration: "\"48.1930 16.3885\""
+        concentration: List(48.1930, 16.3885)
       - molecule: latDestination
         concentration: 48.20564
       - molecule: longDestination
@@ -295,7 +295,7 @@ deployments:
       - molecule: S3DistanceTraveled
         concentration: 0.0
       - molecule: exportPrefix
-        concentration: "\"S2\""
+        concentration: '"S2".toString'
       - molecule: nodes
         concentration: 0
       - molecule: rounds
@@ -317,7 +317,7 @@ deployments:
       - molecule: isDestination
         concentration: false
       - molecule: target
-        concentration: "\"48.2249, 16.3785\""
+        concentration: List(48.2249, 16.3785)
       - molecule: latDestination
         concentration: 48.214455
       - molecule: longDestination
@@ -343,7 +343,7 @@ deployments:
       - molecule: S3DistanceTraveled
         concentration: 0.0
       - molecule: exportPrefix
-        concentration: "\"S3\""
+        concentration: '"S3".toString'
       - molecule: nodes
         concentration: 0
       - molecule: rounds

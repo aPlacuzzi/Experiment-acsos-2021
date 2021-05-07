@@ -200,6 +200,9 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
   private def channelToDestination(source: Boolean, destination: Boolean, width: Double, warningZone: Boolean): (Boolean, Double) = {
     val ds = classicGradientWithShare(source, warningZone)
     val dd = classicGradientWithShare(destination, warningZone)
+    if (ds == Double.PositiveInfinity || dd == Double.PositiveInfinity) {
+      return (false, Double.PositiveInfinity)
+    }
     val db = distanceBetween(source, destination, () => mux(warningZone) {Double.PositiveInfinity }{ nbrRange()})
     val inChannel = !(ds + dd == Double.PositiveInfinity && db == Double.PositiveInfinity) && ds + dd <= db + width
     (inChannel, if (inChannel) dd else Double.PositiveInfinity)

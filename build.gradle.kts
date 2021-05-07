@@ -26,6 +26,14 @@ dependencies {
     implementation("org.slf4j:slf4j-api:1.7.30")
     //implementation("org.protelis:protelis-lang:_")
     implementation(kotlin("stdlib"))
+
+    implementation("commons-io:commons-io:_")
+    implementation("org.danilopianini:jirf:_")
+    implementation("com.graphhopper:graphhopper-core:_")
+    implementation("com.graphhopper:graphhopper-reader-osm:_"){
+        exclude(module = "slf4j-log4j12")
+    }
+    implementation("org.danilopianini:thread-inheritable-resource-loader:_")
 }
 
 tasks.withType<ScalaCompile> {

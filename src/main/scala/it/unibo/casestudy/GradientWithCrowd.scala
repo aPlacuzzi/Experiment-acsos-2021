@@ -54,20 +54,25 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
     var channelCount = 0
     sspawn[ID, Unit, Unit] (
       src => arg => {
+        val k = rep(0)(_+1)
         val isChannelSource = isSource && mid() == src
         val isChannelDestination = node.get("isDestination").asInstanceOf[Boolean] && node.get("sourceId") == src
-        // TODO be aware of reanrtrace
-        val channel = channelToDestination(isChannelSource, isChannelDestination, 30, warning)
-        node.put("_inChannel", channel._1)
-        if (src == mid()) {
-          node.put("_channelDistance", channel._2)
+        branch(maxHood(k) > k  & isChannelSource) {
+          POut((), External)
+        } {
+          // TODO be aware of reanrtrace
+          val channel = channelToDestination(isChannelSource, isChannelDestination, 30, warning)
+          node.put("_inChannel", channel._1)
+          if (src == mid()) {
+            node.put("_channelDistance", channel._2)
+          }
+          if (channel._1) {
+            channelCount += 1
+          }
+          navigateChannel(isChannelSource, channel)
+          val state = if (removeDestination(isSource = isChannelSource)) Terminated else Bubble
+          POut((), state)
         }
-        if (channel._1) {
-          channelCount += 1
-        }
-        navigateChannel(isChannelSource, channel)
-        val state = if (removeDestination(isSource = isChannelSource)) Terminated else Bubble
-        POut((), state)
       },
       if (isSource && checkStartTime() && !isCloserToDestination()) Set(mid()) else Set.empty,
       ()

@@ -71,11 +71,13 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
           }
           if (channel._1) {
             channelCount += 1
+/*
             src match {
               case 1657 => node.put("channel1", true)
               case 1658 => node.put("channel2", true)
               case 1659 => node.put("channel3", true)
             }
+*/
           }
           navigateChannel(isChannelSource, channel)
           val state = if (removeDestination(isSource = isChannelSource)) Terminated else Bubble

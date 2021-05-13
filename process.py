@@ -268,7 +268,7 @@ if __name__ == '__main__':
             for experiment in experiments:
                 # Collect all files for the experiment of interest
                 import fnmatch #  + '_*.txt'
-                allfiles = filter(lambda file: fnmatch.fnmatch(file, '20210509-' + experiment + '_*'), os.listdir(directory))
+                allfiles = filter(lambda file: fnmatch.fnmatch(file, '[0-9]*-' + experiment + '_*'), os.listdir(directory))
                 allfiles = [directory + separator + name for name in allfiles]
                 allfiles.sort()
                 # From the file name, extract the independent variables

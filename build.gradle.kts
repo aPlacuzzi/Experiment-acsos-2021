@@ -24,7 +24,6 @@ dependencies {
     implementation("org.scala-lang:scala-library:2.13.4")
     implementation("it.unibo.scafi:scafi-core_2.13:_")
     implementation("org.slf4j:slf4j-api:1.7.30")
-    //implementation("org.protelis:protelis-lang:_")
     implementation(kotlin("stdlib"))
 
     implementation("commons-io:commons-io:_")
@@ -55,19 +54,6 @@ sourceSets.getByName("main") {
 }
 
 val alchemistGroup = "Run Alchemist"
-
-fun createTask(name: String, fileName: String, effectsFile: String, extensionEffectsFile: String = "aes") = tasks.register<JavaExec>(name) {
-    group = alchemistGroup // This is for better organization when running ./gradlew tasks
-    description = "Launches simulation" // Just documentation
-    main = "it.unibo.alchemist.Alchemist" // The class to launch
-    classpath = sourceSets["main"].runtimeClasspath // The classpath to use
-    // These are the program arguments
-    args(
-        "-y", "src/main/resources/yaml/${fileName}.yml",
-        "-g", "src/main/resources/${effectsFile}.${extensionEffectsFile}"
-    )
-}
-
 val baseDataFileName: String? by project
 val maxHeapRatioArg: String? by project
 val timeArg: String? by project
@@ -113,7 +99,6 @@ fun makeTest(
         val datafilename = "${today}-" +  (baseDataFileName ?: name)
         dependsOn("build")
         classpath = sourceSets["main"].runtimeClasspath
-        classpath("src/main/protelis")
         main = "it.unibo.alchemist.Alchemist"
         maxHeapSize = "${heap}m"
         jvmArgs("-XX:+AggressiveHeap")
@@ -144,20 +129,7 @@ fun makeTest(
     }*/
 }
 
-
-createTask("s", "s", "s")
-createTask("clone", "clone", "gradient")
-createTask("gradient", "gradient", "gradient")
-createTask("crowdWithVirtuals", "crowdWithVirtuals", "caseStudy", "json")
-createTask("runScafi", "crowdWarningScafi", "crowd")
-createTask("runProtelis", "crowdWarningProtelis", "crowd")
-makeTest(name="batchTime", file = "crowdWithVirtuals", time = 1.0, vars = setOf("random", "gridStep"), taskSize = 1500, sampling = 10.0)
-makeTest(name="batch", file = "crowdWithVirtuals", time = 700.0/*, vars = setOf("random")*/, taskSize = 1500, sampling = 10.0, effects = "caseStudy.json")
-makeTest(name="batchNg", file = "crowdWithVirtualsNg", time = 700.0/*, vars = setOf("random")*/, taskSize = 1500, sampling = 10.0, effects = "caseStudy.json")
-makeTest(name="batch1", file = "crowdWithVirtuals1", time = 700.0, taskSize = 1500, threads = 1, sampling = 10.0, outputDir = "data1")//, effects = "caseStudy.json")
-makeTest(name="batch1Ng", file = "crowdWithVirtuals1", time = 700.0, taskSize = 1500, threads = 1, sampling = 10.0, outputDir = "data1")//, effects = "caseStudy.json")
-makeTest(name="batch2", file = "crowdWithVirtuals2", time = 700.0, vars = setOf("random"), taskSize = 1500, threads = 1, sampling = 10.0, outputDir = "data2")
-makeTest(name="batch3", file = "crowdWithVirtuals3", time = 700.0, vars = setOf("random"), taskSize = 1500, threads = 1, sampling = 10.0, outputDir = "data3")//, effects = "caseStudy.json")
-makeTest(name="caseStudy", file = "crowdWithVirtuals", time = 1000.0, vars = setOf("random", "gridStep"), taskSize = 1500, sampling = 1.0, outputDir = "data") //, effects = "caseStudy.json")
-makeTest(name="caseStudyTd1000", file = "crowdWithVirtualsTd", time = 1000.0, vars = setOf("random", "gridStep"), taskSize = 1500, sampling = 1.0, outputDir = "data") //, effects = "caseStudy.json")
-makeTest(name="caseStudyTd750", file = "crowdWithVirtualsTd", time = 750.0, vars = setOf("random", "gridStep"), taskSize = 1500, sampling = 1.0, outputDir = "data")
+makeTest(name="caseStudyTd1000", file = "crowdWithVirtualsTd", time = 1000.0, vars = setOf("random", "gridStep"), taskSize = 1500, sampling = 1.0)
+makeTest(name="caseStudyTd1000seed0", file = "crowdWithVirtualsTd", time = 1000.0, vars = setOf("gridStep"), taskSize = 1500, sampling = 1.0)
+makeTest(name="GUIwithVirtual", file = "crowdWithVirtualsTd", time = 1000.0, taskSize = 1500, sampling = 500.0, effects = "caseStudy.json")
+makeTest(name="GUIwithoutVirtual", file = "crowdWithoutVirtualsTd", time = 1000.0, taskSize = 1500, sampling = 500.0, effects = "caseStudy.json")

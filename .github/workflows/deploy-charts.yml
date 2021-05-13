@@ -38,7 +38,10 @@ jobs:
       - name: Generate charts
         run: python process.py
       - name: Crop charts
-        run: find charts -name "*.pdf" -exec pdfcrop --clip {} {} \;
+        run: |
+          ls -l .
+          ls -l ./charts
+          find charts -name "*.pdf" -exec pdfcrop --clip {} {} \;
       - name: Generate archive
         run: tar -czvf "charts.tar.gz" -C charts/
       - name: Create tag

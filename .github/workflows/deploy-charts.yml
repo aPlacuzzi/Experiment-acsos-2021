@@ -26,6 +26,7 @@ jobs:
         run: |
           GRAVIS="$HOME/gravis"
           git clone --depth 1 https://github.com/DanySK/Gravis-CI.git $GRAVIS
+          chmod +x $GRAVIS/install-python
           $GRAVIS/install-python
           pip install --upgrade pip --user
           pip install -r requirements.txt --user

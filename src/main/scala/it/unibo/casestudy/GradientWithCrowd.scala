@@ -5,13 +5,10 @@
 
 package it.unibo.casestudy
 
-import it.unibo.alchemist.model.implementations.actions.{MoveToTarget, ReproduceGPSTrace, TargetWalker}
-import it.unibo.alchemist.model.implementations.environments.OSMEnvironment
+import it.unibo.alchemist.model.implementations.actions.TargetWalker
 import it.unibo.alchemist.model.implementations.molecules.SimpleMolecule
 import it.unibo.alchemist.model.implementations.positions.LatLongPosition
-import it.unibo.alchemist.model.implementations.reactions.Event
-import it.unibo.alchemist.model.implementations.timedistributions.DiracComb
-import it.unibo.alchemist.model.interfaces.{Environment, GeoPosition, Position, Position2D}
+import it.unibo.alchemist.model.interfaces.GeoPosition
 import it.unibo.alchemist.model.scafi.ScafiIncarnationForAlchemist._
 
 /**
@@ -63,7 +60,6 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
         branch(maxHood(k) > k  & isChannelSource) {
           POut((), External)
         } {
-          // TODO be aware of re-entrance
           val channel = channelToDestination(isChannelSource, isChannelDestination, 30, warning)
           node.put("_inChannel", channel._1)
           if (src == mid()) {
@@ -71,13 +67,11 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
           }
           if (channel._1) {
             channelCount += 1
-/*
             src match {
-              case 1657 => node.put("channel1", true)
-              case 1658 => node.put("channel2", true)
-              case 1659 => node.put("channel3", true)
+              case 0 => node.put("channel1", true)
+              case 1 => node.put("channel2", true)
+              case 2 => node.put("channel3", true)
             }
-*/
           }
           navigateChannel(isChannelSource, channel)
           val state = if (removeDestination(isSource = isChannelSource)) Terminated else Bubble
@@ -218,7 +212,7 @@ class GradientWithCrowd extends AggregateProgram  with StandardSensors with Bloc
     mux (ds == Double.PositiveInfinity || dd == Double.PositiveInfinity) {
       (false, Double.PositiveInfinity)
     } {
-      val db = distanceBetween(source, destination, () => mux(nbr(warningZone)) { Double.PositiveInfinity } { nbrRange() })
+      val db = distanceBetween(source, destination, () => mux(warningZone) { Double.PositiveInfinity } { nbrRange() })
       val inChannel = !(ds + dd == Double.PositiveInfinity && db == Double.PositiveInfinity) && ds + dd <= db + width
       (inChannel, if (inChannel) dd else Double.PositiveInfinity)
     }

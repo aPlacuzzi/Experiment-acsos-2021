@@ -48,13 +48,9 @@ jobs:
         run: |
           git config --global user.email "andrea.placuzzi@unibo.it"
           git config --global user.name "aPlacuzzi"
-      - name: Populate TAG environment variables
-        shell: bash
-        run: |
-          TAG=$(git describe --tags --exact-match HEAD || echo '')
-          echo "Current tag is: '$TAG' (setup in the TAG environment variable)"
-          echo "TAG=$TAG" >> $GITHUB_ENV
       - name: Deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: hub release create -a "charts.tar.gz" -m "$(git tag -l --format='%(contents)' "$TAG")" "$TAG" || true
+        run: |
+          tag_name=$(git describe)
+          hub release create -a "charts.tar.gz" -m "$tag_name" "$tag_name"

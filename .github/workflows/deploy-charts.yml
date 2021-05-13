@@ -37,12 +37,8 @@ jobs:
         run: mkdir -p charts
       - name: Generate charts
         run: python process.py
-      - name: Crop charts
-        run: find charts -name "*.pdf" -exec pdfcrop --clip {} {} \;
       - name: Generate archive
-        run: |
-          ls -l ./charts
-          tar -czvf "charts.tar.gz" -C ./charts/
+        run: tar -czvf "charts.tar.gz" -C ./charts .
       - name: Create tag
         run: |
           curl -sL https://github.com/DanySK/Gravis-CI/raw/master/autotag > autotag

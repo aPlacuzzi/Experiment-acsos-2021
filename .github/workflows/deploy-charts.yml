@@ -22,13 +22,16 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      - name: Generate charts
+        # Install additional packages
+      - name: Configure Linux
+        shell: bash
         run: |
-          GRAVIS="$HOME/gravis"
-          git clone --depth 1 https://github.com/DanySK/Gravis-CI.git $GRAVIS
-          chmod +x $GRAVIS/install-python
-          $GRAVIS/install-python
-          pip install --upgrade pip --user
-          pip install -r requirements.txt --user
-          python process.py
-          find charts -name "*.pdf" -exec pdfcrop --clip {} {} \;
+          if [ -x .github/scripts/configure_linux ]; then
+            .github/scripts/configure_linux
+          fi
+      - name: Upgrade pip
+        run: pip install --upgrade pip --user
+      - name: Install requirements
+        run: pip install -r requirements.txt --user
+      - name: Generate charts
+        run: python process.py

@@ -33,5 +33,30 @@ jobs:
         run: pip install --upgrade pip --user
       - name: Install requirements
         run: pip install -r requirements.txt --user
+      - name: Prepare charts folder
+        run: mkdir -p charts
       - name: Generate charts
         run: python process.py
+      - name: Crop charts
+        run: find charts -name "*.pdf" -exec pdfcrop --clip {} {} \;
+      - name: Generate archive
+        run: tar -czvf "charts.tar.gz" -C charts/
+      - name: Create tag
+        run: |
+          curl -sL https://github.com/DanySK/Gravis-CI/raw/master/autotag > autotag
+          chmod +x autotag
+          ./autotag
+      - name: Configure git
+        run: |
+          git config --global user.email "andrea.placuzzi@unibo.it"
+          git config --global user.name "aPlacuzzi"
+      - name: Populate TAG environment variables
+        shell: bash
+        run: |
+          TAG=$(git describe --tags --exact-match HEAD || echo '')
+          echo "Current tag is: '$TAG' (setup in the TAG environment variable)"
+          echo "TAG=$TAG" >> $GITHUB_ENV
+      - name: Deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: hub release create -a "charts.tar.gz" -m "$(git tag -l --format='%(contents)' "$TAG")" "$TAG" || true

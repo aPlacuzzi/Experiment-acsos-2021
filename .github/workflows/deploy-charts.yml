@@ -39,15 +39,15 @@ jobs:
         run: python process.py
       - name: Generate archive
         run: tar -czvf "charts.tar.gz" -C ./charts .
+      - name: Configure git
+        run: |
+          git config --global user.email "andrea.placuzzi@unibo.it"
+          git config --global user.name "aPlacuzzi"
       - name: Create tag
         run: |
           curl -sL https://github.com/DanySK/Gravis-CI/raw/master/autotag > autotag
           chmod +x autotag
           ./autotag
-      - name: Configure git
-        run: |
-          git config --global user.email "andrea.placuzzi@unibo.it"
-          git config --global user.name "aPlacuzzi"
       - name: Deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
